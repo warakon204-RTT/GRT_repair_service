@@ -723,3 +723,13 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('btnClearTechSig').addEventListener('click', () => clearCanvasContent('techSigCanvas'));
     }
 });
+
+// ฟังก์ชันสำหรับล้างรอยวาดบน Canvas โดยระบุตาม ID
+function clearCanvas(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        // ล้างลายเส้นทั้งหมดในพิกัดกว้างคูณสูงของ Canvas นั้นๆ
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+}

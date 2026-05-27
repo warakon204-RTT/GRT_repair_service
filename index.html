@@ -45,6 +45,15 @@
             .item-form-grid { grid-template-columns: 1fr; gap: 10px; }
         }
     </style>
+
+    <link rel="apple-touch-icon" href="LGRT11.jpg">
+    <link rel="apple-touch-icon" sizes="180x180" href="LGRT11.jpg">
+    <link rel="icon" type="image/jpeg" sizes="192x192" href="LGRT11.jpg">
+    <link rel="icon" type="image/jpeg" sizes="32x32" href="LGRT11.jpg">
+
+
+
+
 </head>
 <body>
 
@@ -134,13 +143,13 @@
             </section>
 
             <section class="checklist-section">
-                <h3>รายการตรวจสอบหน้างาน (Checklist)</h3>
+                <h3>📝รายการตรวจสอบ</h3>
                 <div id="checklistContainer"></div>
-                <button id="btnAddChecklist" type="button" class="btn-secondary">+ เพิ่มรายการตรวจหน้างาน</button>
+                <button id="btnAddChecklist" type="button" class="btn-secondary">+ เพิ่มหัวข้อ</button>
             </section>
 
             <section class="markup-section">
-                <h3>ถ่ายรูปหน้างานและมาร์กจุดขัดข้อง</h3>
+                <h3>รูปถ่าย</h3>
                 <div id="photosContainer">
                     <div class="photo-block" id="photoBlock_1">
                         <p style="font-weight: bold; color: #2b6cb0;">📷 รูปภาพที่ 1</p>
@@ -159,29 +168,35 @@
                 <button id="btnAddPhotoBlock" type="button" class="btn-secondary" style="background-color: #4c51bf;">➕ เพิ่มรูปภาพหน้างานเพิ่ม</button>
             </section>
 
-            <section class="signature-section">
-                <div class="sig-block-form">
-                    <label style="font-weight: bold;">🖋️ ลายเซ็นลูกค้า</label>
-                    <canvas id="customerSigCanvas" width="300" height="150" style="border:1px dashed #cbd5e0; background:#fff;"></canvas>
-                    <div style="margin-top: 8px;">
-                        <label style="font-size: 13px; color: #4a5568;">👤 ชื่อตัวบรรจงลูกค้า:</label>
-                        <input type="text" id="printedCustomerName" placeholder="พิมพ์ชื่อ-นามสกุลจริงของลูกค้า" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px; font-family:'Sarabun', sans-serif;">
-                    </div>
-                </div>
+<section class="signature-section">
+    <div class="sig-block-form">
+        <label style="font-weight: bold; display: block; margin-bottom: 5px;">🖋️ ลายเซ็นลูกค้า</label>
+        <canvas id="customerSigCanvas" width="300" height="150" style="border:1px dashed #cbd5e0; background:#fff; display: block; border-radius: 4px;"></canvas>
+        
+        <button type="button" onclick="clearCanvas('customerSigCanvas')" style="margin-top: 8px; padding: 6px 14px; font-size: 12px; font-weight: bold; background: #f7fafc; border: 1px solid #cbd5e0; border-radius: 4px; cursor: pointer; color: #4a5568; transition: 0.2s;" onmouseover="this.style.background='#e53e3e'; this.style.color='#fff'; this.style.borderColor='#e53e3e'" onmouseout="this.style.background='#f7fafc'; this.style.color='#4a5568'; this.style.borderColor='#cbd5e0'">ล้างรอยวาด</button>
+        
+        <div style="margin-top: 12px;">
+            <label style="font-size: 13px; color: #4a5568;">👤 ชื่อลูกค้า:</label>
+            <input type="text" id="printedCustomerName" placeholder="พิมพ์ชื่อลูกค้า" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px; font-family:'Sarabun', sans-serif;">
+        </div>
+    </div>
 
-                <div class="sig-block-form" style="margin-top: 15px;">
-                    <label style="font-weight: bold;">🛠️ ลายเซ็นผู้รับงาน (ช่างเทคนิค)</label>
-                    <canvas id="techSigCanvas" width="300" height="150" style="border:1px dashed #cbd5e0; background:#fff;"></canvas>
-                    <div style="margin-top: 8px;">
-                        <label style="font-size: 13px; color: #4a5568;">👤 ชื่อตัวบรรจงผู้รับงาน:</label>
-                        <input type="text" id="printedTechName" placeholder="พิมพ์ชื่อ-นามสกุลผู้รับงาน" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px; font-family:'Sarabun', sans-serif;">
-                    </div>
-                </div>
-            </section>
+    <div class="sig-block-form" style="margin-top: 20px; border-top: 1px dashed #e2e8f0; padding-top: 15px;">
+        <label style="font-weight: bold; display: block; margin-bottom: 5px;">🛠️ ลายเซ็นผู้รับงาน (GRT)</label>
+        <canvas id="techSigCanvas" width="300" height="150" style="border:1px dashed #cbd5e0; background:#fff; display: block; border-radius: 4px;"></canvas>
+        
+        <button type="button" onclick="clearCanvas('techSigCanvas')" style="margin-top: 8px; padding: 6px 14px; font-size: 12px; font-weight: bold; background: #f7fafc; border: 1px solid #cbd5e0; border-radius: 4px; cursor: pointer; color: #4a5568; transition: 0.2s;" onmouseover="this.style.background='#e53e3e'; this.style.color='#fff'; this.style.borderColor='#e53e3e'" onmouseout="this.style.background='#f7fafc'; this.style.color='#4a5568'; this.style.borderColor='#cbd5e0'">ล้างรอยวาด</button>
+        
+        <div style="margin-top: 12px;">
+            <label style="font-size: 13px; color: #4a5568;">👤 ชื่อผู้รับงาน:</label>
+            <input type="text" id="printedTechName" placeholder="พิมพ์ชื่อผู้รับงาน" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px; font-family:'Sarabun', sans-serif;">
+        </div>
+    </div>
+</section>
 
             <footer>
-                <button id="btnSubmitJob" class="btn-success">บันทึกข้อมูลและแยกโฟลเดอร์สำเร็จ</button>
-                <button id="btnDownloadPDF" type="button" class="btn-secondary" style="background-color: #4a5568; margin-top: 10px;">📋 เปิดพรีวิวใบรายงาน SERVICE REPORT</button>
+                <button id="btnSubmitJob" class="btn-success">บันทึกข้อมูล</button>
+   
             </footer>
         </div>
 
@@ -441,20 +456,21 @@
 
                         <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 13px;">
                             <div style="text-align: center; width: 45%;">
-                                <div style="height: 55px; display: flex; justify-content: center; align-items: center; margin-bottom: 5px;">
-                                    ${customerSigImg ? `<img src="${customerSigImg}" style="max-height: 55px; max-width: 100%; object-fit: contain;">` : '<div style="border-bottom: 1px solid #000; width: 80%; height: 45px;"></div>'}
-                                </div>
-                                <p style="margin: 0;">( ลงชื่อ: <b>${printedCustomerName || '...........................................'}</b> )</p>
-                                <p style="margin: 3px 0 0 0; font-size: 11px; color: #718096;">ผู้ตรวจรับงาน / ลูกค้า</p>
-                            </div>
-                            
-                            <div style="text-align: center; width: 45%;">
-                                <div style="height: 55px; display: flex; justify-content: center; align-items: center; margin-bottom: 5px;">
-                                    ${techSigImg ? `<img src="${techSigImg}" style="max-height: 55px; max-width: 100%; object-fit: contain;">` : '<div style="border-bottom: 1px solid #000; width: 80%; height: 45px;"></div>'}
-                                </div>
-                                <p style="margin: 0;">( ลงชื่อ: <b>${techName || '...........................................'}</b> )</p>
-                                <p style="margin: 3px 0 0 0; font-size: 11px; color: #718096;">ช่างผู้รับผิดชอบ (GRT Technician)</p>
-                            </div>
+<div style="text-align: center; width: 45%;">
+    <div style="height: 55px; display: flex; justify-content: center; align-items: center; margin-bottom: 5px;">
+        ${customerSigImg ? `<img src="${customerSigImg}" style="max-height: 55px; max-width: 100%; object-fit: contain;">` : '<div style="border-bottom: 1px solid #000; width: 80%; height: 45px;"></div>'}
+    </div>
+    <p style="margin: 0;">( ลงชื่อ: <b>${printedCustomerName || '...........................................'}</b> )</p>
+    <p style="margin: 3px 0 0 0; font-size: 11px; color: #718096;">ผู้ตรวจรับงาน / ลูกค้า</p>
+</div>
+
+<div style="text-align: center; width: 45%;">
+    <div style="height: 55px; display: flex; justify-content: center; align-items: center; margin-bottom: 5px;">
+        ${techSigImg ? `<img src="${techSigImg}" style="max-height: 55px; max-width: 100%; object-fit: contain;">` : '<div style="border-bottom: 1px solid #000; width: 80%; height: 45px;"></div>'}
+    </div>
+    <p style="margin: 0;">( ลงชื่อ: <b>${printedTechName || '...........................................'}</b> )</p>
+    <p style="margin: 3px 0 0 0; font-size: 11px; color: #718096;">ช่างผู้รับผิดชอบ (GRT Technician)</p>
+</div>
                         </div>
                     </div>
                 `;
