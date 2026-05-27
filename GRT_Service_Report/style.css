@@ -1,0 +1,377 @@
+/* ==========================================
+   THEME & MODERN ORGANIZATIONAL VARIABLE
+   ========================================== */
+:root {
+    --primary-color: #0f172a;    /* สีน้ำเงินเข้มหรูหราแบบองค์กร (Navy/Slate) */
+    --accent-color: #0284c7;     /* สีฟ้าน้ำทะเลสำหรับเน้นจุดสำคัญ */
+    --success-color: #10b981;    /* สีเขียวโมเดิร์น */
+    --danger-color: #f43f5e;     /* สีแดงโมเดิร์น */
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --border-color: #e2e8f0;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    /* ⚠️ ติดตั้งภาพพื้นหลังขององค์กร */
+    background-image: url('Gemini_Generated71gv.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    
+    color: var(--text-main);
+    padding: 30px 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* บล็อกครอบสไตล์กระจกหรูหรา (Modern Glassmorphism) */
+.app-container {
+    width: 100%;
+    max-width: 700px;
+    background: rgba(255, 255, 255, 0.85); /* ขาวโปร่งแสงเพื่อให้เห็นพื้นหลังลางๆ */
+    backdrop-filter: blur(16px);           /* สั่งเบลอพื้นหลังเพิ่มความหรูหรา */
+    -webkit-backdrop-filter: blur(16px);
+    padding: 35px 30px;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* ==========================================
+   HEADER & BRAND LOGO
+   ========================================== */
+header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    text-align: center;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    padding-bottom: 25px;
+}
+
+/* โลโก้บริษัท */
+.brand-logo {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+    border: 2px solid #ffffff;
+}
+
+header h2 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--primary-color);
+}
+
+.form-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+@media (max-width: 480px) {
+    .form-grid { grid-template-columns: 1fr; } /* ยุบเหลือแถวเดียวบนมือถือ */
+}
+
+.form-group-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+label {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ปรับฟิลด์กรอกข้อมูลให้มีความโค้งมนและสะอาดตา */
+input[type="text"], select {
+    width: 100%;
+    height: 46px;
+    padding: 0 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    outline: none;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.2s ease;
+}
+
+input[type="text"]:focus, select:focus {
+    border-color: var(--accent-color);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
+}
+
+.hidden-input {
+    display: none;
+    margin-top: 8px;
+    animation: fadeIn 0.3s ease;
+}
+
+/* ==========================================
+   CARD SECTIONS (ส่วนงานย่อย)
+   ========================================== */
+section {
+    background: rgba(255, 255, 255, 0.7);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+h3 {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+h3::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background: var(--accent-color);
+    border-radius: 4px;
+}
+
+/* สไตล์ส่วนตรวจสอบอะไหล่ */
+.parts-section {
+    background: rgba(254, 243, 199, 0.5); /* ส้มอ่อนโปร่งแสง */
+    border: 1px solid rgba(252, 211, 77, 0.4);
+}
+
+.radio-group {
+    display: flex;
+    gap: 24px;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: var(--text-main);
+    font-size: 15px;
+}
+
+.radio-group input[type="radio"] {
+    accent-color: var(--accent-color); /* เปลี่ยนสีวงกลมวิทยุเป็นสีฟ้า */
+    width: 18px;
+    height: 18px;
+}
+
+/* สไตล์แถวเช็กลิสต์ */
+.checklist-row, .part-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    animation: fadeIn 0.2s ease;
+}
+
+.checklist-row span, .part-row span {
+    font-weight: 700;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.checklist-row input { flex: 1; height: 42px; }
+.checklist-row select { width: auto; height: 42px; min-width: 110px; }
+
+/* ==========================================
+   CANVAS DRAWING & SIGNATURES
+   ========================================== */
+.canvas-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    background: #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+}
+
+canvas {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    max-width: 100%;
+}
+
+.sig-flex {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 480px) {
+    .sig-flex { grid-template-columns: 1fr; }
+}
+
+.sig-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.sig-box p {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+/* ==========================================
+   PREMIUM BUTTONS
+   ========================================== */
+button {
+    height: 44px;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary {
+    background: #ffffff;
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.btn-secondary:hover {
+    background: var(--primary-color);
+    color: #ffffff;
+    border-color: var(--primary-color);
+}
+
+.btn-danger-sm {
+    background: rgba(244, 63, 94, 0.1);
+    color: var(--danger-color);
+    padding: 0 14px;
+    height: 32px;
+    font-size: 12px;
+}
+
+.btn-danger-sm:hover { background: var(--danger-color); color: white; }
+
+footer {
+    margin-top: 10px;
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    padding-top: 25px;
+}
+
+.btn-success {
+    background: var(--primary-color); /* เปลี่ยนปุ่มส่งเป็นสีองค์กรเข้มขรึม */
+    color: white;
+    width: 100%;
+    height: 52px;
+    font-size: 16px;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.2);
+}
+
+.btn-success:hover {
+    background: #1e293b;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+}
+
+button:active { transform: translateY(1px); }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* เพิ่มต่อท้ายในแท็ก <style> เดิม */
+.btn-view-doc { background-color: #4c51bf; } /* สีม่วงสวยงามสำหรับปุ่มเปิดดูเอกสาร */
+
+/* ==========================================
+   TABLE & DASHBOARD RESPONSIVE FIXES
+   ========================================== */
+
+/* ปรับตารางประวัติงานให้เข้ากับ Theme Glassmorphism */
+#historyTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#historyTable th {
+    background: rgba(15, 23, 42, 0.05);
+    padding: 12px;
+    text-align: left;
+    font-size: 13px;
+    color: var(--primary-color);
+}
+
+#historyTable td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    font-size: 13px;
+}
+
+/* ปรับแต่งปุ่มในตารางให้สวยงามและคลิกง่ายบนมือถือ */
+.action-btn {
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 2px;
+}
+
+.btn-view-doc { background: #3b82f6; color: white; }
+.btn-view-doc:hover { background: #2563eb; }
+
+.btn-edit { background: #e2e8f0; color: #475569; }
+.btn-edit:hover { background: #cbd5e1; }
+
+/* ตอบสนองต่อการสัมผัสบนมือถือ */
+@media (max-width: 600px) {
+    #historyTable { font-size: 11px; }
+    #historyTable td { padding: 8px 4px; }
+    .action-btn { padding: 8px; width: 100%; }
+}
