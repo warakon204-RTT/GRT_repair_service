@@ -377,6 +377,20 @@ button:active { transform: translateY(1px); }
 }
 
 /* ====================================================================
+   🖥️ FORCE REMOVE BORDER ON SCREEN (สั่งลบกรอบแผงใบงานบนจอภาพปกติ)
+   ==================================================================== */
+#pdfActiveArea, 
+#pdfActiveArea.card, 
+#pdfActiveArea.border, 
+#pdfActiveArea.shadow {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important; /* ปล่อยโปร่งใสเพื่อให้กลืนกับสไตล์กระจกของแอป */
+    padding: 0 !important;             /* เคลียร์เศษพื้นที่ขอบจอ */
+}
+
+/* ====================================================================
    🚫 PRINT & PDF GENERATION OPTIMIZATION (ป้องกันปุ่มติดในรายงาน)
    ==================================================================== */
 @media print {
@@ -422,10 +436,12 @@ button:active { transform: translateY(1px); }
         overflow: visible !important;
     }
 
-    /* 4. เคลียร์ระยะขอบของพื้นที่ใบงานหลักเพื่อให้พิมพ์ได้เต็มแผ่น A4พอดี */
+    /* 4. เคลียร์ระยะขอบของพื้นที่ใบงานหลักเพื่อให้พิมพ์ได้เต็มแผ่น A4พอดี และไร้ขอบ100% */
     #pdfActiveArea {
         border: none !important;
-        padding: 0 !important;
+        outline: none !important;
         box-shadow: none !important;
+        padding: 0 !important;
+        background: #ffffff !important; /* ในไฟล์ PDF บังคับพื้นหลังขาวใสสะอาด */
     }
 }
