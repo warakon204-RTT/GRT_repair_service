@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ระบบบันทึกงานซ่อมองค์กร (เวอร์ชันอัปเกรด)</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* สไตล์เพิ่มเติมสำหรับระบบแท็บ ตาราง และ Layout ใหม่ */
+        .tab-navigation { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .tab-btn { padding: 10px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border: none; background: #edf2f7; border-radius: 5px; color: #4a5568; transition: 0.3s; }
+        .tab-btn.active { background: #3182ce; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .filter-bar { display: flex; flex-wrap: wrap; gap: 15px; background: #f7fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; font-size: 14px; }
+        .data-table th, .data-table td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
+        .data-table th { background-color: #ebf8ff; color: #2b6cb0; }
+        .data-table tr:hover { background-color: #f7fafc; }
+        .action-btn { padding: 5px 10px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; color: white; display: inline-block; margin-bottom: 2px; }
+        .btn-view-doc { background-color: #4a5568; }
+        .btn-edit { background-color: #dd6b20; }
+        .btn-delete { background-color: #e53e3e; }
+        
+        /* สไตล์ชุดปุ่มควบคุมภายในหน้าใบงาน SERVICE REPORT */
+        .report-action-group { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+        .btn-report-ctrl { padding: 6px 14px; font-size: 13px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: 0.2s; }
+        .btn-report-ctrl:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-pdf-row { background-color: #e53e3e; } 
+        .btn-line-share { background-color: #06C755; }
+        .btn-print-row { background-color: #3182ce; }
+        .btn-share { background-color: #38a169; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 650px; max-height: 85vh; overflow-y: auto; }
+        
+        /* สไตล์สำหรับกล่องรูปภาพและ Checklist */
+        .photo-block { border: 1px dashed #cbd5e0; padding: 15px; margin-bottom: 15px; border-radius: 6px; background: #f7fafc; }
+        .checklist-row { background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 8px; }
+        .part-row { display: flex; gap: 10px; margin-bottom: 8px; }
+        
+        /* สไตล์พิเศษสำหรับช่องรายละเอียดชิ้นงานซ่อมใหม่ */
+        .item-form-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px; }
+        @media (max-width: 480px) {
+            .item-form-grid { grid-template-columns: 1fr; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab(event, 'form-tab')">📝 บันทึกงานซ่อมใหม่</button>
+            <button class="tab-btn" onclick="switchTab(event, 'data-tab'); loadHistoryData();">📊 ประวัติข้อมูลลูกค้า</button>
+        </div>
+
+        <div id="form-tab" class="tab-content active">
+            <header>
+                <img src="LGRT11.jpg" alt="Company Logo" class="brand-logo">
+                <h2>GRT Service Report</h2>
+                
+                <div class="form-grid">
+                    <div class="form-group-block">
+                        <label>บริษัทลูกค้า</label>
+                        <select id="customerSelect" onchange="toggleOtherInput(this, 'customerNameOther')">
+                            <option value="CAC">CAC</option>
+                            <option value="CBI">CBI</option>
+                            <option value="OTHER">อื่นๆ (ระบุเอง) ➔</option>
+                        </select>
+                        <input type="text" id="customerNameOther" class="hidden-input" placeholder="ระบุชื่อบริษัทลูกค้า" style="margin-top: 5px; width: 100%;">
+                    </div>
+
+                    <div class="form-group-block">
+                        <label>ประเภทงาน</label>
+                        <select id="jobTypeSelect" onchange="toggleOtherInput(this, 'jobTypeOther')">
+                            <option value="เคลม">เคลม (Claim)</option>
+                            <option value="ซ่อม">ซ่อม (Repair)</option>
+                            <option value="ผลิตใหม่">ผลิตใหม่ (Remanufacture)</option>
+                            <option value="RE-MACHINE">RE-MACHINE</option>
+                            <option value="OTHER">อื่นๆ (ระบุเอง) ➔</option>
+                        </select>
+                        <input type="text" id="jobTypeOther" class="hidden-input" placeholder="ระบุประเภทงานอื่นๆ" style="margin-top: 5px; width: 100%;">
+                    </div>
+                </div>
+
+                <div class="form-group" style="width: 100%; margin-top: 15px; margin-bottom: 20px;">
+                    <label style="font-weight: bold;">เลขที่ใบงาน <span style="color: red; font-size: 12px;">*ระบบรันอัตโนมัติ*</span></label>
+                    <input type="text" id="jobUUID" readonly placeholder="⏳ กำลังรันเลขใบงาน..." 
+                           style="background-color: #edf2f7; color: #2b6cb0; font-weight: bold; cursor: not-allowed; width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0;">
+                </div>
+
+                <div style="background: #f7fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 12px 0; color: #2b6cb0; font-size: 15px; border-bottom: 2px solid #cbd5e0; padding-bottom: 5px;">📦 รายละเอียด</h4>
+                    
+                    <div class="item-form-grid">
+                        <div>
+                            <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;">ชื่อชิ้นงาน</label>
+                            <input type="text" id="addItemName" placeholder="เช่น MOLD, JIG" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;">จำนวน</label>
+                            <input type="number" id="addItemQty" value="1" min="1" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif;">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;">โมเดล / รุ่น / ซีเรียลนัมเบอร์</label>
+                        <input type="text" id="addItemModel" placeholder="เช่น BMW / RS3" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif;">
+                    </div>
+
+                    <div style="margin-bottom: 5px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;">รายละเอียดงาน / อาการชำรุดขัดข้อง</label>
+                        <textarea id="addJobDescription" rows="3" placeholder="ระบุลักษณะงานซ่อม ขอบเขตอาการชำรุด หรือข้อมูลการแก้ไขหน้างานเพิ่มเติม..." style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; resize: vertical;"></textarea>
+                    </div>
+                </div>
+            </header>
+
+            <section class="parts-section">
+                <h3>การตรวจสอบอะไหล่ / อุปกรณ์</h3>
+                <div class="radio-group">
+                    <label><input type="radio" name="partsStatus" value="ครบถ้วน" checked> อะไหล่ครบถ้วน</label>
+                    <label><input type="radio" name="partsStatus" value="ไม่ครบ"> อะไหล่ไม่ครบ (ระบุรายการ)</label>
+                </div>
+                
+                <div id="missingPartsContainer" class="hidden-input">
+                    <div id="partsList"></div>
+                    <button id="btnAddPart" type="button" class="btn-secondary">+ เพิ่มรายการอะไหล่ที่ขาด</button>
+                    <div style="margin-top: 10px;">
+                        <label>📝 รายละเอียด/หมายเหตุเกี่ยวกับอะไหล่เพิ่มเติม:</label>
+                        <textarea id="partsNotes" rows="2" style="width:100%; padding:8px; border-radius:4px; border:1px solid #cbd5e0; font-family: 'Sarabun', sans-serif;" placeholder=""></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <section class="checklist-section">
+                <h3>รายการตรวจสอบหน้างาน (Checklist)</h3>
+                <div id="checklistContainer"></div>
+                <button id="btnAddChecklist" type="button" class="btn-secondary">+ เพิ่มรายการตรวจหน้างาน</button>
+            </section>
+
+            <section class="markup-section">
+                <h3>ถ่ายรูปหน้างานและมาร์กจุดขัดข้อง</h3>
+                <div id="photosContainer">
+                    <div class="photo-block" id="photoBlock_1">
+                        <p style="font-weight: bold; color: #2b6cb0;">📷 รูปภาพที่ 1</p>
+                        <div style="margin-bottom: 10px; display: flex; gap: 10px;">
+                            <input type="file" class="camera-input" accept="image/*" onchange="handleImageUpload(this, 'markupCanvas_1')">
+                        </div>
+                        <div class="canvas-wrapper">
+                            <canvas id="markupCanvas_1" width="500" height="350" style="background: #e2e8f0; max-width: 100%;"></canvas>
+                        </div>
+                        <div style="margin-top: 5px;">
+                            <input type="text" class="photo-desc-input" placeholder="คำอธิบายภาพถ่ายใบนี้ (เช่น จุดที่ต้องแก้ไข/ซ่อม/สั่งเพิ่ม)" style="width: 100%; padding: 8px; margin-bottom: 5px;">
+                            <button type="button" class="btn-danger-sm" onclick="clearCanvasContent('markupCanvas_1')">ล้างรอยวาดรูปนี้</button>
+                        </div>
+                    </div>
+                </div>
+                <button id="btnAddPhotoBlock" type="button" class="btn-secondary" style="background-color: #4c51bf;">➕ เพิ่มรูปภาพหน้างานเพิ่ม</button>
+            </section>
+
+            <section class="signature-section">
+                <div class="sig-block-form">
+                    <label style="font-weight: bold;">🖋️ ลายเซ็นลูกค้า</label>
+                    <canvas id="customerSigCanvas" width="300" height="150" style="border:1px dashed #cbd5e0; background:#fff;"></canvas>
+                    <div style="margin-top: 8px;">
+                        <label style="font-size: 13px; color: #4a5568;">👤 ชื่อตัวบรรจงลูกค้า:</label>
+                        <input type="text" id="printedCustomerName" placeholder="พิมพ์ชื่อ-นามสกุลจริงของลูกค้า" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px; font-family:'Sarabun', sans-serif;">
+                    </div>
+                </div>
+
+                <div class="sig-block-form" style="margin-top: 15px;">
+                    <label style="font-weight: bold;">🛠️ ลายเซ็นผู้รับงาน (ช่างเทคนิค)</label>
+                    <canvas id="techSigCanvas" width="300" height="150" style="border:1px dashed #cbd5e0; background:#fff;"></canvas>
+                    <div style="margin-top: 8px;">
+                        <label style="font-size: 13px; color: #4a5568;">👤 ชื่อตัวบรรจงผู้รับงาน:</label>
+                        <input type="text" id="printedTechName" placeholder="พิมพ์ชื่อ-นามสกุลผู้รับงาน" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px; font-family:'Sarabun', sans-serif;">
+                    </div>
+                </div>
+            </section>
+
+            <footer>
+                <button id="btnSubmitJob" class="btn-success">บันทึกข้อมูลและแยกโฟลเดอร์สำเร็จ</button>
+                <button id="btnDownloadPDF" type="button" class="btn-secondary" style="background-color: #4a5568; margin-top: 10px;">📋 เปิดพรีวิวใบรายงาน SERVICE REPORT</button>
+            </footer>
+        </div>
+
+        <div id="data-tab" class="tab-content">
+            <h3>📊 ประวัติและแดชบอร์ดงานซ่อมบำรุง</h3>
+
+<div class="filter-bar">
+    <div style="flex: 1; min-width: 150px;">
+        <label>คัดแยกตามลูกค้า:</label>
+        <select id="filterCustomer" onchange="filterData()">
+            <option value="ALL">-- ลูกค้าทั้งหมด --</option>
+            <option value="CAC">CAC</option>
+            <option value="CBI">CBI</option>
+        </select>
+    </div>
+    <div style="flex: 1; min-width: 150px;">
+        <label>จากวันที่:</label>
+        <input type="date" id="filterDateStart" onchange="filterData()">
+    </div>
+    <div style="flex: 1; min-width: 150px;">
+        <label>ถึงวันที่:</label>
+        <input type="date" id="filterDateEnd" onchange="filterData()">
+    </div>
+    <div style="display: flex; align-items: flex-end;">
+        <button type="button" onclick="resetFilters()" class="btn-secondary">🔄 ล้างตัวกรอง</button>
+    </div>
+</div>
+
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>วันที่ระบบ</th>
+                            <th>เลขที่ใบงาน</th>
+                            <th>ชื่อลูกค้า</th>
+                            <th>ชื่อชิ้นงาน / อุปกรณ์</th>
+                            <th>ประเภทงาน</th>
+                            <th>ช่างผู้รับผิดชอบ</th>
+                            <th>การจัดการข้อมูลหน้างาน</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: #a0aec0;">⏳ กำลังโหลดข้อมูลประวัติคลาวด์...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="viewDocModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            
+            <div id="docPreviewContainer" style="background: white; padding:10px; border-radius:6px; font-size:14px; line-height:1.6; margin-bottom:15px;">
+                ⏳ กำลังเรียกเนื้อหาตัวอย่างรายงาน...
+            </div>
+            
+            <div style="display:flex; justify-content:flex-end; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                <button type="button" onclick="closeViewDocModal()" style="padding:8px 25px; background:#4a5568; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h4>✏️ แก้ไขข้อมูลใบงานซ่อมบำรุง</h4>
+            <input type="hidden" id="editJobId">
+            <div style="margin-bottom: 12px;">
+                <label style="display:block; margin-bottom:5px;">ชื่อบริษัทลูกค้า</label>
+                <input type="text" id="editCustomerName" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px;">
+            </div>
+            <div style="margin-bottom: 12px;">
+                <label style="display:block; margin-bottom:5px;">ชื่อชิ้นงาน / เครื่องมือ</label>
+                <input type="text" id="editItemName" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px;">
+            </div>
+            <div style="margin-bottom: 12px;">
+                <label style="display:block; margin-bottom:5px;">ประเภทงาน</label>
+                <input type="text" id="editJobType" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px;">
+            </div>
+            <div style="margin-bottom: 12px;">
+                <label style="display:block; margin-bottom:5px;">ชื่อช่างหน้างาน</label>
+                <input type="text" id="editTechName" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px;">
+            </div>
+            <div style="margin-bottom: 12px;">
+                <label style="display:block; margin-bottom:5px;">รายละเอียดงาน / อาการชำรุด</label>
+                <textarea id="editJobDescription" rows="3" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px; font-family:'Sarabun', sans-serif; resize:vertical;"></textarea>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+                <button type="button" onclick="closeEditModal()" style="padding:8px 15px; background:#e2e8f0; border:none; border-radius:4px; cursor:pointer;">ยกเลิก</button>
+                <button type="button" onclick="updateJobData()" style="padding:8px 15px; background:#38a169; color:white; border:none; border-radius:4px; cursor:pointer;">💾 อัปเดตบันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="app.js"></script>
+    
+    <script>
+        function switchTab(event, tabId) {
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+        }
+
+        function generateJobNumber() {
+            const now = new Date();
+            const datePart = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
+            const randomPart = Math.floor(1000 + Math.random() * 9000);
+            return `GRT-${datePart}-${randomPart}`;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const jobInput = document.getElementById('jobUUID');
+            if (jobInput) {
+                jobInput.value = generateJobNumber();
+            }
+
+            // ผูกฟังก์ชันเข้ากับปุ่มเปิดพรีวิวหน้าฟอร์มหลัก
+            const btnDownloadPDF = document.getElementById('btnDownloadPDF');
+            if (btnDownloadPDF) {
+                btnDownloadPDF.onclick = () => {
+                    const jobUUID = document.getElementById('jobUUID')?.value || 'NEW-JOB';
+                    const customerSelect = document.getElementById('customerSelect')?.value || '';
+                    openViewDocModal('', jobUUID, customerSelect);
+                };
+            }
+        });
+
+        // ====================================================================
+        // 🔥 ฟังก์ชันเจเนอเรต SERVICE REPORT และผูกชุดปุ่มควบคุมการทำงาน
+        // ====================================================================
+        function openViewDocModal(jobId, jobNum, customerName) {
+            const modal = document.getElementById('viewDocModal');
+            if(modal) modal.style.display = 'flex';
+            
+            const previewContainer = document.getElementById('docPreviewContainer');
+            if(previewContainer) {
+                previewContainer.innerHTML = `⏳ กำลังประมวลผลโครงสร้างเอกสาร...`;
+            }
+            
+            // 1. ดึงค่าเรียลไทม์ปัจจุบันจากหน้ากรอกข้อมูลหลักก่อน
+            let jobUUID = document.getElementById('jobUUID')?.value || jobNum;
+            let customerSelect = document.getElementById('customerSelect')?.value || customerName;
+            let jobTypeSelect = document.getElementById('jobTypeSelect')?.value || '-';
+            let itemName = document.getElementById('addItemName')?.value || '-';
+            let itemQty = document.getElementById('addItemQty')?.value || '1';
+            let itemModel = document.getElementById('addItemModel')?.value || '-';
+            let jobDesc = document.getElementById('addJobDescription')?.value || 'ไม่มีรายละเอียดเพิ่มเติม';
+            let techName = document.getElementById('printedTechName')?.value || '-';
+            let printedCustomerName = document.getElementById('printedCustomerName')?.value || '-';
+            
+            let partsStatusElement = document.querySelector('input[name="partsStatus"]:checked');
+            let partsStatus = partsStatusElement ? partsStatusElement.value : 'ครบถ้วน';
+            let partsNotes = document.getElementById('partsNotes')?.value || '-';
+
+            // 2. ถ้ามีไอดีกดมาจากประวัติตาราง ให้ดึงค่าจากแคชคลาวด์มาสวมแทน
+            if (jobId && typeof localCachedJobs !== 'undefined') {
+                const targetJob = localCachedJobs.find(j => j.id == jobId);
+                if (targetJob) {
+                    jobUUID = targetJob.job_number || targetJob.job_uuid || jobNum;
+                    customerSelect = targetJob.customer_name || targetJob.customer || customerName;
+                    jobTypeSelect = targetJob.job_type || '-';
+                    itemName = targetJob.item_name || '-';
+                    itemQty = targetJob.qty || targetJob.item_qty || '1';
+                    itemModel = targetJob.model || targetJob.item_model || '-';
+                    jobDesc = targetJob.job_description || targetJob.description || 'ไม่มีรายละเอียดเพิ่มเติม';
+                    techName = targetJob.tech_name || targetJob.printed_tech_name || '-';
+                    printedCustomerName = targetJob.customer_name_printed || '-';
+                    partsStatus = targetJob.parts_status || 'ครบถ้วน';
+                    partsNotes = targetJob.parts_notes || '-';
+                }
+            }
+
+            const finalCustomer = customerSelect === 'OTHER' ? (document.getElementById('customerNameOther')?.value || 'ระบุอื่นๆ') : customerSelect;
+            const finalJobType = jobTypeSelect === 'OTHER' ? (document.getElementById('jobTypeOther')?.value || 'ระบุอื่นๆ') : jobTypeSelect;
+
+            // 🖋️ ดึงรอยวาดภาพลายเซ็นจาก Canvas แปลงเป็น Base64 Data URL
+            let customerSigImg = "";
+            let techSigImg = "";
+            const customerSigCanvas = document.getElementById('customerSigCanvas');
+            const techSigCanvas = document.getElementById('techSigCanvas');
+            
+            if (customerSigCanvas) {
+                try {
+                    const ctx = customerSigCanvas.getContext('2d');
+                    const buffer = ctx.getImageData(0, 0, customerSigCanvas.width, customerSigCanvas.height);
+                    if(buffer.data.some(channel => channel !== 0)) { customerSigImg = customerSigCanvas.toDataURL("image/png"); }
+                } catch(e) {}
+            }
+            if (techSigCanvas) {
+                try {
+                    const ctx = techSigCanvas.getContext('2d');
+                    const buffer = ctx.getImageData(0, 0, techSigCanvas.width, techSigCanvas.height);
+                    if(buffer.data.some(channel => channel !== 0)) { techSigImg = techSigCanvas.toDataURL("image/png"); }
+                } catch(e) {}
+            }
+
+            // 3. ประกอบข้อมูลลงในหน้า SERVICE REPORT (รวมกลุ่มปุ่มควบคุมไว้ใต้หัวข้อหลัก)
+            if(previewContainer) {
+                previewContainer.innerHTML = `
+                    <div id="pdfActiveArea" style="font-family: 'Sarabun', sans-serif; color: #000; padding: 15px; box-sizing: border-box; background: white; border: 1px solid #cbd5e0; border-radius: 4px;">
+                        
+                        <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 15px;">
+                            <h2 style="margin: 0 0 5px 0; color: #1a365d; font-size: 22px; font-weight: bold; letter-spacing: 0.5px;">GRT SERVICE REPORT</h2>
+                            <p style="margin: 0; font-size: 13px; color: #4a5568;">รายงานผลการบันทึกงานซ่อมบำรุงและตรวจเช็กหน้างาน</p>
+                            
+                            <div class="report-action-group" data-html2pdf-ignore="true" style="margin-top: 12px;">
+                                <button type="button" onclick="executeReportPDF('${jobUUID}')" class="btn-report-ctrl btn-pdf-row">📥 เซฟ PDF</button>
+                                <button type="button" onclick="executeReportLine('${jobUUID}', '${finalCustomer}', '${finalJobType}', '${itemName}', '${techName}')" class="btn-report-ctrl btn-line-share">🟢 ส่ง LINE</button>
+                                <button type="button" onclick="executeReportPrint('${jobUUID}', '${finalCustomer}')" class="btn-report-ctrl btn-print-row">🖨️ พิมพ์รายงาน</button>
+                                <button type="button" onclick="executeReportCopyLink('${jobUUID}')" class="btn-report-ctrl btn-share">🔗 คัดลอกลิงก์</button>
+                            </div>
+                        </div>
+                        
+
+
+
+
+
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px;">
+                            <div><b>เลขที่ใบงาน (Job No.):</b> <span style="color:#2b6cb0; font-weight:bold;">${jobUUID}</span></div>
+                            <div><b>วันที่ออกรายงาน:</b> ${new Date().toLocaleDateString('th-TH')}</div>
+                        </div>
+
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 13px; table-layout: fixed;">
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc; width: 25%;"><b>บริษัทลูกค้า</b></td>
+                                <td style="padding: 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${finalCustomer}</td>
+                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc; width: 20%;"><b>ประเภทงาน</b></td>
+                                <td style="padding: 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${finalJobType}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>ชื่อชิ้นงาน / อุปกรณ์</b></td>
+                                <td style="padding: 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${itemName}</td>
+                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>จำนวน</b></td>
+                                <td style="padding: 8px; border: 1px solid #cbd5e0;">${itemQty} รายการ</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>โมเดล / ซีเรียล</b></td>
+                                <td colspan="3" style="padding: 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${itemModel}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc; height: 80px; vertical-align: top;"><b>รายละเอียดอาการชำรุด</b></td>
+                                <td colspan="3" style="padding: 8px; border: 1px solid #cbd5e0; vertical-align: top; word-wrap: break-word; white-space: pre-line;">${jobDesc}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>การตรวจสอบอะไหล่</b></td>
+                                <td colspan="3" style="padding: 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">
+                                    สถานะ: <b>${partsStatus}</b> ${partsStatus === 'ไม่ครบ' ? `<br><span style="color:#dd6b20;">หมายเหตุรายการที่ขาด:</span> ${partsNotes}` : ''}
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 13px;">
+                            <div style="text-align: center; width: 45%;">
+                                <div style="height: 55px; display: flex; justify-content: center; align-items: center; margin-bottom: 5px;">
+                                    ${customerSigImg ? `<img src="${customerSigImg}" style="max-height: 55px; max-width: 100%; object-fit: contain;">` : '<div style="border-bottom: 1px solid #000; width: 80%; height: 45px;"></div>'}
+                                </div>
+                                <p style="margin: 0;">( ลงชื่อ: <b>${printedCustomerName || '...........................................'}</b> )</p>
+                                <p style="margin: 3px 0 0 0; font-size: 11px; color: #718096;">ผู้ตรวจรับงาน / ลูกค้า</p>
+                            </div>
+                            
+                            <div style="text-align: center; width: 45%;">
+                                <div style="height: 55px; display: flex; justify-content: center; align-items: center; margin-bottom: 5px;">
+                                    ${techSigImg ? `<img src="${techSigImg}" style="max-height: 55px; max-width: 100%; object-fit: contain;">` : '<div style="border-bottom: 1px solid #000; width: 80%; height: 45px;"></div>'}
+                                </div>
+                                <p style="margin: 0;">( ลงชื่อ: <b>${techName || '...........................................'}</b> )</p>
+                                <p style="margin: 3px 0 0 0; font-size: 11px; color: #718096;">ช่างผู้รับผิดชอบ (GRT Technician)</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function closeViewDocModal() {
+            const modal = document.getElementById('viewDocModal');
+            if(modal) modal.style.display = 'none';
+        }
+
+        // ====================================================================
+        // ⚙️ ฟังก์ชันย่อยสำหรับปุ่มควบคุมต่าง ๆ ของหน้าใบงาน SERVICE REPORT
+        // ====================================================================
+        
+        // 1. ฟังก์ชันบันทึกรายงานเป็น PDF
+        function executeReportPDF(jobNum) {
+            const targetElement = document.getElementById('pdfActiveArea');
+            if(!targetElement) return alert("ไม่พบข้อมูลรายงานเพื่อแปลงไฟล์");
+            
+            const options = {
+                margin:       [10, 10, 10, 10], 
+                filename:     `Service_Report_${jobNum}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2.5, useCORS: true, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(options).from(targetElement).save()
+                .catch(err => { alert("เกิดข้อผิดพลาดระหว่างเจเนอเรตไฟล์ PDF"); });
+        }
+
+        // 2. ฟังก์ชันแชร์สรุปใบงานเข้าห้องแชตแอป LINE
+        function executeReportLine(jobUUID, customer, jobType, item, tech) {
+            const shareText = `📌 *GRT SERVICE REPORT*\n` +
+                              `เลขที่ใบงาน: ${jobUUID}\n` +
+                              `ลูกค้า: ${customer}\n` +
+                              `ประเภทงาน: ${jobType}\n` +
+                              `ชิ้นงาน: ${item}\n` +
+                              `ช่างผู้รับผิดชอบ: ${tech}\n` +
+                              `🔗 เปิดดูรายละเอียดใบงานเต็ม: ${window.location.origin}?job=${jobUUID}`;
+            
+            window.open(`https://line.me/R/msg/text/?${encodeURIComponent(shareText)}`, '_blank');
+        }
+
+        // 3. ฟังก์ชันสั่งพิมพ์เอกสารรายงานออกทางเครื่องพิมพ์
+        function executeReportPrint(jobUUID, customer) {
+            if (typeof printSingleJob === 'function') {
+                printSingleJob(jobUUID, customer);
+            } else {
+                window.print();
+            }
+        }
+
+        // 4. ฟังก์ชันคัดลอกลิ้งก์ระบบลงคลิปบอร์ด
+        function executeReportCopyLink(jobUUID) {
+            const directLink = `${window.location.origin}?job=${jobUUID}`;
+            navigator.clipboard.writeText(directLink)
+                .then(() => { alert(`🔗 คัดลอกลิงก์ใบงาน ${jobUUID} เรียบร้อยแล้ว สามารถนำไปวางส่งต่อได้ทันทีครับ`); })
+                .catch(err => { alert(`ลิงก์ใบงานของคุณคือ: ${directLink}`); });
+        }
+
+        // ====================================================================
+        // 🛠️ ฟังก์ชันลบข้อมูลตาราง repair_jobs (Supabase)
+        // ====================================================================
+        async function deleteJobRow(jobId, jobNum) {
+            const isConfirm = confirm(`⚠️ คุณแน่ใจใช่ไหมที่จะลบ "ใบงานเลขที่: ${jobNum}" ?\n\nการลบนี้จะนำข้อมูลออกจากระบบ Supabase และไม่สามารถกู้คืนได้!`);
+            if (!isConfirm) return;
+
+            try {
+                let client = null;
+                if (typeof supabaseClient !== 'undefined' && supabaseClient && typeof supabaseClient.from === 'function') { client = supabaseClient; } 
+                else if (typeof supabase !== 'undefined' && supabase && typeof supabase.from === 'function') { client = supabase; } 
+                else if (window.supabaseClient && typeof window.supabaseClient.from === 'function') { client = window.supabaseClient; } 
+                else if (window.supabase && typeof window.supabase.from === 'function') { client = window.supabase; }
+
+                if (!client) {
+                    for (let key in window) {
+                        try {
+                            if (window[key] && typeof window[key] === 'object' && typeof window[key].from === 'function') {
+                                client = window[key];
+                                break;
+                            }
+                        } catch (e) { }
+                    }
+                }
+
+                if (!client || typeof client.from !== 'function') {
+                    throw new Error("ไม่พบตัวเชื่อมต่อฐานข้อมูลในระบบ");
+                }
+
+                const targetId = isNaN(jobId) ? jobId : Number(jobId);
+                const { error } = await client.from('repair_jobs').delete().eq('id', targetId);
+                if (error) throw error;
+
+                if (typeof localCachedJobs !== 'undefined' && Array.isArray(localCachedJobs)) {
+                    localCachedJobs = localCachedJobs.filter(j => j.id != jobId);
+                }
+
+                alert(`🎉 ลบใบงานเลขที่ ${jobNum} เรียบร้อยแล้วครับ`);
+
+                if (typeof renderTable === 'function') {
+                    if (typeof localCachedJobs !== 'undefined') { renderTable(localCachedJobs); } 
+                    else if (typeof loadHistoryData === 'function') { loadHistoryData(); } 
+                    else { window.location.reload(); }
+                } else {
+                    window.location.reload(); 
+                }
+            } catch (err) {
+                console.error("Delete Action Error:", err);
+                alert(`❌ ไม่สามารถทำการลบข้อมูลได้เนื่องจาก: ${err.message}`);
+            }
+        }
+    </script>
+</body>
+</html>
