@@ -20,7 +20,7 @@
 }
 
 body {
-    /* ⚠️ ติดตั้งภาพพื้นหลังขององค์กร */
+    /* ⚠️ ภาพพื้นหลังขององค์กร */
     background-image: url('Gemini_Generated71gv.png');
     background-size: cover;
     background-position: center;
@@ -319,14 +319,11 @@ button:active { transform: translateY(1px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* เพิ่มต่อท้ายในแท็ก <style> เดิม */
 .btn-view-doc { background-color: #4c51bf; } /* สีม่วงสวยงามสำหรับปุ่มเปิดดูเอกสาร */
 
 /* ==========================================
    TABLE & DASHBOARD RESPONSIVE FIXES
    ========================================== */
-
-/* ปรับตารางประวัติงานให้เข้ากับ Theme Glassmorphism */
 #historyTable {
     width: 100%;
     border-collapse: separate;
@@ -351,7 +348,6 @@ button:active { transform: translateY(1px); }
     font-size: 13px;
 }
 
-/* ปรับแต่งปุ่มในตารางให้สวยงามและคลิกง่ายบนมือถือ */
 .action-btn {
     padding: 6px 10px;
     border-radius: 8px;
@@ -369,7 +365,6 @@ button:active { transform: translateY(1px); }
 .btn-edit { background: #e2e8f0; color: #475569; }
 .btn-edit:hover { background: #cbd5e1; }
 
-/* ตอบสนองต่อการสัมผัสบนมือถือ */
 @media (max-width: 600px) {
     #historyTable { font-size: 11px; }
     #historyTable td { padding: 8px 4px; }
@@ -377,7 +372,7 @@ button:active { transform: translateY(1px); }
 }
 
 /* ====================================================================
-   🖥️ FORCE REMOVE BORDER ON SCREEN (สั่งลบกรอบแผงใบงานบนจอภาพปกติ)
+   🖥️ FORCE REMOVE BORDER ON SCREEN (ลบกรอบแผงใบงานบนจอภาพปกติ)
    ==================================================================== */
 #pdfActiveArea, 
 #pdfActiveArea.card, 
@@ -386,15 +381,15 @@ button:active { transform: translateY(1px); }
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
-    background: transparent !important; /* ปล่อยโปร่งใสเพื่อให้กลืนกับสไตล์กระจกของแอป */
-    padding: 0 !important;             /* เคลียร์เศษพื้นที่ขอบจอ */
+    background: transparent !important;
+    padding: 0 !important;
 }
 
 /* ====================================================================
-   🚫 PRINT & PDF GENERATION OPTIMIZATION (ป้องกันปุ่มติดในรายงาน)
+   🚫 PRINT & PDF GENERATION OPTIMIZATION (เวอร์ชันแก้ไขเนื้อหาและรูปขาดหาย)
    ==================================================================== */
 @media print {
-    /* 1. สั่งซ่อนชุดปุ่มควบคุม, แถบแท็บ, ตัวกรอง และปุ่มอื่นๆ ทั้งหมดไม่ให้แสดงในหน้ากระดาษและ PDF */
+    /* 1. สั่งซ่อนชุดปุ่มควบคุมทั้งหมด ไม่ให้หลุดเข้าไปใน PDF */
     .report-action-group, 
     .tab-navigation, 
     .filter-bar, 
@@ -402,19 +397,24 @@ button:active { transform: translateY(1px); }
     button, 
     .action-btn,
     .btn-secondary,
-    .btn-success {
+    .btn-success,
+    .btn-clear-sig {
         display: none !important;
     }
 
-    /* 2. ซ่อนภาพพื้นหลังขององค์กร เพื่อประหยัดหมึกพิมพ์และทำให้ตารางข้อมูลคมชัด */
+    /* 2. ปลดล็อกระบบ Flexbox และความสูงของ Body เพื่อให้เนื้อหาไหลลงหน้า 2 ได้สมบูรณ์ */
     body {
         background-image: none !important;
         background: #ffffff !important;
         color: #000000 !important;
         padding: 0 !important;
+        display: block !important;        /* เปลี่ยนจาก flex เป็น block */
+        height: auto !important;          /* ปลดล็อกให้ความสูงขยายตามเนื้อหาจริง */
+        min-height: auto !important;      /* ล้างค่า 100vh ของหน้าจอปกติออก */
+        overflow: visible !important;     /* เปิดให้เนื้อหาล้นลงหน้าถัดไปได้ */
     }
 
-    /* 3. จัดสไตล์ให้ Modal แผ่ขยายออกเต็มหน้ากระดาษ ไม่ให้ติดพื้นหลังโปร่งแสงสีดำ */
+    /* 3. สั่งขยายกล่อง Modal ให้เต็มหน้ากระดาษพิมพ์ */
     .modal {
         position: absolute !important;
         left: 0 !important;
@@ -434,14 +434,27 @@ button:active { transform: translateY(1px); }
         max-width: 100% !important;
         max-height: none !important;
         overflow: visible !important;
+        display: block !important;
     }
 
-    /* 4. เคลียร์ระยะขอบของพื้นที่ใบงานหลักเพื่อให้พิมพ์ได้เต็มแผ่น A4พอดี และไร้ขอบ100% */
+    /* 4. เคลียร์พื้นที่ขอบของใบงานหลัก เพื่อให้พิมพ์ได้เต็มแผ่น A4พอดี */
     #pdfActiveArea {
         border: none !important;
         outline: none !important;
         box-shadow: none !important;
         padding: 0 !important;
-        background: #ffffff !important; /* ในไฟล์ PDF บังคับพื้นหลังขาวใสสะอาด */
+        background: #ffffff !important; 
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    /* 5. ป้องกันกล่องเช็กลิสต์, ตาราง, บล็อกรูปถ่าย หรือลายเซ็นโดนตัดขาดครึ่งตรงรอยต่อกระดาษ */
+    .signature-section, 
+    .sig-block-form, 
+    .sig-flex,
+    .checklist-row,
+    table, tr, img {
+        page-break-inside: avoid !important; /* หากพื้นที่หน้าแรกไม่พอพิมพ์ ให้ยกทั้งบล็อกไปเริ่มหน้า 2 */
+        break-inside: avoid !important;
     }
 }

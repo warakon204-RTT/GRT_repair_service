@@ -400,87 +400,132 @@
                 } catch(e) {}
             }
 
-            // 3. ประกอบข้อมูลลงในหน้า SERVICE REPORT (รวมกลุ่มปุ่มควบคุมไว้ใต้หัวข้อหลัก)
-            if(previewContainer) {
-                previewContainer.innerHTML = `
-                    <div id="pdfActiveArea" style="font-family: 'Sarabun', sans-serif; color: #000; padding: 15px; box-sizing: border-box; background: white; border: 1px solid #cbd5e0; border-radius: 4px;">
-                        
-                        <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 15px;">
-                            <h2 style="margin: 0 0 5px 0; color: #1a365d; font-size: 22px; font-weight: bold; letter-spacing: 0.5px;">GRT SERVICE REPORT</h2>
-                            <p style="margin: 0; font-size: 13px; color: #4a5568;">รายงานผลการบันทึกงานซ่อมบำรุงและตรวจเช็กหน้างาน</p>
-                            
-                            <div class="report-action-group" data-html2pdf-ignore="true" style="margin-top: 12px;">
-                                <button type="button" onclick="executeReportPDF('${jobUUID}')" class="btn-report-ctrl btn-pdf-row">📥 เซฟ PDF</button>
-                                <button type="button" onclick="executeReportPrint('${jobUUID}', '${finalCustomer}')" class="btn-report-ctrl btn-print-row">🖨️ พิมพ์รายงาน</button>
+            // 3. ประกอบข้อมูลลงในหน้า SERVICE REPORT (ปรับโครงสร้างลายเซ็นเป็น Table เพื่อป้องกันการหายใน PDF)
+if(previewContainer) {
+    previewContainer.innerHTML = `
+        <div id="pdfActiveArea" style="font-family: 'Sarabun', sans-serif; color: #000; padding: 5px 15px 15px 15px; box-sizing: border-box; background: white; border: 1px solid #cbd5e0; border-radius: 4px;">
+            
+            <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 10px;">
+                <h2 style="margin: 0 0 3px 0; color: #1a365d; font-size: 21px; font-weight: bold; letter-spacing: 0.5px;">GRT SERVICE REPORT</h2>
+                <p style="margin: 0; font-size: 12.5px; color: #4a5568;">รายงานผลการบันทึกงานซ่อมบำรุงและตรวจเช็กหน้างาน</p>
+                
+                <div class="report-action-group" data-html2pdf-ignore="true" style="margin-top: 8px;">
+                    <button type="button" onclick="executeReportPDF('${jobUUID}')" class="btn-report-ctrl btn-pdf-row">📥 เซฟ PDF</button>
+                    <button type="button" onclick="executeReportPrint('${jobUUID}', '${finalCustomer}')" class="btn-report-ctrl btn-print-row">🖨️ พิมพ์รายงาน</button>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12.5px;">
+                <div><b>เลขที่ใบงาน (Job No.):</b> <span style="color:#2b6cb0; font-weight:bold;">${jobUUID}</span></div>
+                <div><b>วันที่ออกรายงาน:</b> ${new Date().toLocaleDateString('th-TH')}</div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 12.5px; table-layout: fixed;">
+                <tr>
+                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #f7fafc; width: 25%;"><b>บริษัทลูกค้า</b></td>
+                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${finalCustomer}</td>
+                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #f7fafc; width: 20%;"><b>ประเภทงาน</b></td>
+                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${finalJobType}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>ชื่อชิ้นงาน / อุปกรณ์</b></td>
+                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${itemName}</td>
+                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #itemQty"><b>จำนวน</b></td>
+                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0;">${itemQty} รายการ</td>
+                </tr>
+                <tr>
+                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>โมเดล / ซีเรียล</b></td>
+                    <td colspan="3" style="padding: 6px 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${itemModel}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #f7fafc; height: 60px; vertical-align: top;"><b>รายละเอียดอาการชำรุด</b></td>
+                    <td colspan="3" style="padding: 6px 8px; border: 1px solid #cbd5e0; vertical-align: top; word-wrap: break-word; white-space: pre-line;">${jobDesc}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>การตรวจสอบอะไหล่</b></td>
+                    <td colspan="3" style="padding: 6px 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">
+                        สถานะ: <b>${partsStatus}</b> ${partsStatus === 'ไม่ครบ' ? `<br><span style="color:#dd6b20;">หมายเหตุรายการที่ขาด:</span> ${partsNotes}` : ''}
+                    </td>
+                </tr>
+            </table>
+
+            <div style="margin-bottom: 12px; page-break-inside: avoid;">
+                <h4 style="font-size: 13px; margin: 0 0 5px 0; color: #1a365d;">📋 ผลการตรวจสอบหน้างาน (Checklist)</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <thead>
+                        <tr style="background: #f7fafc;">
+                            <th style="border: 1px solid #cbd5e0; padding: 5px; text-align: center; width: 10%;">ลำดับ</th>
+                            <th style="border: 1px solid #cbd5e0; padding: 5px; text-align: left;">รายการตรวจสอบ</th>
+                            <th style="border: 1px solid #cbd5e0; padding: 5px; text-align: center; width: 25%;">ผลการตรวจสอบ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${typeof checklistRowsHTML !== 'undefined' ? checklistRowsHTML : '<tr><td colspan="3" style="text-align:center; padding:8px; color:#718096;">ไม่มีข้อมูลการตรวจสอบ</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-bottom: 15px; page-break-inside: avoid;">
+                <h4 style="font-size: 13px; margin: 0 0 6px 0; color: #1a365d;">📸 ภาพถ่ายจุดขัดข้องและการวิเคราะห์หน้างาน</h4>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="width: 50%; padding-right: 5px; vertical-align: top;">
+                            <div style="border: 1px solid #cbd5e0; padding: 6px; border-radius: 4px; text-align: center; background: #fff;">
+                                <div style="height: 160px; background: #f7fafc; border-radius: 4px; text-align: center; line-height: 160px; overflow: hidden; margin-bottom: 4px;">
+                                    ${typeof jobPhotoUrl1 !== 'undefined' && jobPhotoUrl1 ? `<img src="${jobPhotoUrl1}" style="max-width: 100%; max-height: 100%; vertical-align: middle; object-fit: contain;">` : '<span style="color:#a0aec0; font-size:12px;">ไม่มีรูปถ่ายจุดขัดข้อง 1</span>'}
+                                </div>
+                                <p style="margin: 0; font-size: 11.5px; color: #4a5568;"><b>คำอธิบาย:</b> ${typeof photoDesc1 !== 'undefined' ? photoDesc1 : 'ภาพถ่ายจุดขัดข้อง 1'}</p>
                             </div>
+                        </td>
+                        <td style="width: 50%; padding-left: 5px; vertical-align: top;">
+                            <div style="border: 1px solid #cbd5e0; padding: 6px; border-radius: 4px; text-align: center; background: #fff;">
+                                <div style="height: 160px; background: #f7fafc; border-radius: 4px; text-align: center; line-height: 160px; overflow: hidden; margin-bottom: 4px;">
+                                    ${typeof jobPhotoUrl2 !== 'undefined' && jobPhotoUrl2 ? `<img src="${jobPhotoUrl2}" style="max-width: 100%; max-height: 100%; vertical-align: middle; object-fit: contain;">` : '<span style="color:#a0aec0; font-size:12px;">ไม่มีรูปถ่ายจุดขัดข้อง 2</span>'}
+                                </div>
+                                <p style="margin: 0; font-size: 11.5px; color: #4a5568;"><b>คำอธิบาย:</b> ${typeof photoDesc2 !== 'undefined' ? photoDesc2 : 'ภาพถ่ายจุดขัดข้อง 2'}</p>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-top: 30px; font-size: 12.5px; page-break-inside: avoid; break-inside: avoid;">
+                <tr>
+                    <td style="width: 50%; text-align: center; vertical-align: bottom; padding: 5px;">
+                        <div style="height: 55px; line-height: 55px; text-align: center; margin-bottom: 5px;">
+                            ${customerSigImg ? 
+                                `<img src="${customerSigImg}" style="max-height: 55px; max-width: 90%; vertical-align: middle; object-fit: contain;">` : 
+                                '<div style="border-bottom: 1px solid #000; width: 80%; height: 45px; margin: 0 auto;"></div>'
+                            }
                         </div>
-                        
-
-
-
-
-
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px;">
-                            <div><b>เลขที่ใบงาน (Job No.):</b> <span style="color:#2b6cb0; font-weight:bold;">${jobUUID}</span></div>
-                            <div><b>วันที่ออกรายงาน:</b> ${new Date().toLocaleDateString('th-TH')}</div>
+                        <p style="margin: 0;">( ลงชื่อ: <b>${printedCustomerName || '...........................................'}</b> )</p>
+                        <p style="margin: 3px 0 0 0; font-size: 11px; color: #718096;">ผู้ตรวจรับงาน / ลูกค้า</p>
+                    </td>
+                    
+                    <td style="width: 50%; text-align: center; vertical-align: bottom; padding: 5px;">
+                        <div style="height: 55px; line-height: 55px; text-align: center; margin-bottom: 5px;">
+                            ${techSigImg ? 
+                                `<img src="${techSigImg}" style="max-height: 55px; max-width: 90%; vertical-align: middle; object-fit: contain;">` : 
+                                '<div style="border-bottom: 1px solid #000; width: 80%; height: 45px; margin: 0 auto;"></div>'
+                            }
                         </div>
+                        <p style="margin: 0;">( ลงชื่อ: <b>${printedTechName || '...........................................'}</b> )</p>
+                        <p style="margin: 3px 0 0 0; font-size: 11px; color: #718096;">ช่างผู้รับผิดชอบ (GRT Technician)</p>
+                    </td>
+                </tr>
+            </table>
 
-                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 13px; table-layout: fixed;">
-                            <tr>
-                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc; width: 25%;"><b>บริษัทลูกค้า</b></td>
-                                <td style="padding: 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${finalCustomer}</td>
-                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc; width: 20%;"><b>ประเภทงาน</b></td>
-                                <td style="padding: 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${finalJobType}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>ชื่อชิ้นงาน / อุปกรณ์</b></td>
-                                <td style="padding: 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${itemName}</td>
-                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>จำนวน</b></td>
-                                <td style="padding: 8px; border: 1px solid #cbd5e0;">${itemQty} รายการ</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>โมเดล / ซีเรียล</b></td>
-                                <td colspan="3" style="padding: 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${itemModel}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc; height: 80px; vertical-align: top;"><b>รายละเอียดอาการชำรุด</b></td>
-                                <td colspan="3" style="padding: 8px; border: 1px solid #cbd5e0; vertical-align: top; word-wrap: break-word; white-space: pre-line;">${jobDesc}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>การตรวจสอบอะไหล่</b></td>
-                                <td colspan="3" style="padding: 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">
-                                    สถานะ: <b>${partsStatus}</b> ${partsStatus === 'ไม่ครบ' ? `<br><span style="color:#dd6b20;">หมายเหตุรายการที่ขาด:</span> ${partsNotes}` : ''}
-                                </td>
-                            </tr>
-                        </table>
+        </div>
+    `;
+    }
+}
 
-                        <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 13px;">
-                            <div style="text-align: center; width: 45%;">
-<div style="text-align: center; width: 45%;">
-    <div style="height: 55px; display: flex; justify-content: center; align-items: center; margin-bottom: 5px;">
-        ${customerSigImg ? `<img src="${customerSigImg}" style="max-height: 55px; max-width: 100%; object-fit: contain;">` : '<div style="border-bottom: 1px solid #000; width: 80%; height: 45px;"></div>'}
-    </div>
-    <p style="margin: 0;">( ลงชื่อ: <b>${printedCustomerName || '...........................................'}</b> )</p>
-    <p style="margin: 3px 0 0 0; font-size: 11px; color: #718096;">ผู้ตรวจรับงาน / ลูกค้า</p>
-</div>
+function closeViewDocModal() {
+    const modal = document.getElementById('viewDocModal');
+    if(modal) modal.style.display = 'none';
 
-<div style="text-align: center; width: 45%;">
-    <div style="height: 55px; display: flex; justify-content: center; align-items: center; margin-bottom: 5px;">
-        ${techSigImg ? `<img src="${techSigImg}" style="max-height: 55px; max-width: 100%; object-fit: contain;">` : '<div style="border-bottom: 1px solid #000; width: 80%; height: 45px;"></div>'}
-    </div>
-    <p style="margin: 0;">( ลงชื่อ: <b>${printedTechName || '...........................................'}</b> )</p>
-    <p style="margin: 3px 0 0 0; font-size: 11px; color: #718096;">ช่างผู้รับผิดชอบ (GRT Technician)</p>
-</div>
-                        </div>
-                    </div>
-                `;
-            }
-        }
+}
 
-        function closeViewDocModal() {
-            const modal = document.getElementById('viewDocModal');
-            if(modal) modal.style.display = 'none';
-        }
 
 // ⚙️ ฟังก์ชันย่อยสำหรับปุ่มควบคุมต่าง ๆ ของหน้าใบงาน SERVICE REPORT
 // 1. ฟังก์ชันบันทึกรายงานเป็น PDF (เวอร์ชันแก้ไขบั๊กดาวน์โหลดซ้ำ - อัปเดตล่าสุด)
