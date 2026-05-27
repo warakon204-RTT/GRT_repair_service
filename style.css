@@ -375,3 +375,57 @@ button:active { transform: translateY(1px); }
     #historyTable td { padding: 8px 4px; }
     .action-btn { padding: 8px; width: 100%; }
 }
+
+/* ====================================================================
+   🚫 PRINT & PDF GENERATION OPTIMIZATION (ป้องกันปุ่มติดในรายงาน)
+   ==================================================================== */
+@media print {
+    /* 1. สั่งซ่อนชุดปุ่มควบคุม, แถบแท็บ, ตัวกรอง และปุ่มอื่นๆ ทั้งหมดไม่ให้แสดงในหน้ากระดาษและ PDF */
+    .report-action-group, 
+    .tab-navigation, 
+    .filter-bar, 
+    footer, 
+    button, 
+    .action-btn,
+    .btn-secondary,
+    .btn-success {
+        display: none !important;
+    }
+
+    /* 2. ซ่อนภาพพื้นหลังขององค์กร เพื่อประหยัดหมึกพิมพ์และทำให้ตารางข้อมูลคมชัด */
+    body {
+        background-image: none !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+    }
+
+    /* 3. จัดสไตล์ให้ Modal แผ่ขยายออกเต็มหน้ากระดาษ ไม่ให้ติดพื้นหลังโปร่งแสงสีดำ */
+    .modal {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        background: #ffffff !important;
+        display: block !important;
+        z-index: auto !important;
+    }
+
+    .modal-content {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    /* 4. เคลียร์ระยะขอบของพื้นที่ใบงานหลักเพื่อให้พิมพ์ได้เต็มแผ่น A4พอดี */
+    #pdfActiveArea {
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+}

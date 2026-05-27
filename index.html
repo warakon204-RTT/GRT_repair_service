@@ -396,9 +396,7 @@
                             
                             <div class="report-action-group" data-html2pdf-ignore="true" style="margin-top: 12px;">
                                 <button type="button" onclick="executeReportPDF('${jobUUID}')" class="btn-report-ctrl btn-pdf-row">📥 เซฟ PDF</button>
-                                <button type="button" onclick="executeReportLine('${jobUUID}', '${finalCustomer}', '${finalJobType}', '${itemName}', '${techName}')" class="btn-report-ctrl btn-line-share">🟢 ส่ง LINE</button>
                                 <button type="button" onclick="executeReportPrint('${jobUUID}', '${finalCustomer}')" class="btn-report-ctrl btn-print-row">🖨️ พิมพ์รายงาน</button>
-                                <button type="button" onclick="executeReportCopyLink('${jobUUID}')" class="btn-report-ctrl btn-share">🔗 คัดลอกลิงก์</button>
                             </div>
                         </div>
                         
@@ -468,39 +466,65 @@
             if(modal) modal.style.display = 'none';
         }
 
-        // ====================================================================
-        // ⚙️ ฟังก์ชันย่อยสำหรับปุ่มควบคุมต่าง ๆ ของหน้าใบงาน SERVICE REPORT
-        // ====================================================================
+// ⚙️ ฟังก์ชันย่อยสำหรับปุ่มควบคุมต่าง ๆ ของหน้าใบงาน SERVICE REPORT
+// 1. ฟังก์ชันบันทึกรายงานเป็น PDF (เวอร์ชันแก้ไขบั๊กดาวน์โหลดซ้ำ - อัปเดตล่าสุด)
+function executeReportPDF(jobNum) {
+    const targetElement = document.getElementById('pdfActiveArea');
+    if(!targetElement) return alert("ไม่พบข้อมูลรายงานเพื่อแปลงไฟล์");
+    
+    // 1. ทำการโคลนและลบปุ่มควบคุมออกเหมือนเดิม
+    const pdfClone = targetElement.cloneNode(true);
+    const actionGroup = pdfClone.querySelector('.report-action-group');
+    if (actionGroup) {
+        actionGroup.remove();
+    }
+    
+    // 2. ตั้งค่าระยะขอบ
+    const options = {
+        margin:       [15, 10, 15, 10], 
+        filename:     `Service_Report_${jobNum}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2.5, useCORS: true, letterRendering: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    // 3. เรียกใช้งาน html2pdf "เพียงรอบเดียวเท่านั้น" และดักจับ Error ที่ท้ายสุด
+    html2pdf().set(options).from(pdfClone).toPdf().get('pdf').then(function (pdf) {
+        // หาจำนวนหน้าทั้งหมดที่มีในใบงานชิ้นนี้
+        const totalPages = pdf.internal.getNumberOfPages();
         
-        // 1. ฟังก์ชันบันทึกรายงานเป็น PDF
-        function executeReportPDF(jobNum) {
-            const targetElement = document.getElementById('pdfActiveArea');
-            if(!targetElement) return alert("ไม่พบข้อมูลรายงานเพื่อแปลงไฟล์");
+        // วนลูปเพื่อปั๊มเลขหน้าลงไปทีละหน้า
+        for (let i = 1; i <= totalPages; i++) {
+            pdf.setPage(i); // เลือกหน้าปัจจุบัน
             
-            const options = {
-                margin:       [10, 10, 10, 10], 
-                filename:     `Service_Report_${jobNum}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2.5, useCORS: true, letterRendering: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+            pdf.setFontSize(7); // ตั้งค่าขนาดตัวอักษรเลขหน้า
+            pdf.setTextColor(100, 116, 139); // ใช้สีเทา Slate สวยๆ ให้เข้ากับ Theme
             
-            html2pdf().set(options).from(targetElement).save()
-                .catch(err => { alert("เกิดข้อผิดพลาดระหว่างเจเนอเรตไฟล์ PDF"); });
-        }
+            // คำนวณพิกเซลความกว้างและความสูงของหน้ากระดาษ A4
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            
+            // เจาะจงพิกัดวาง: ขยับเข้ามาจากขอบขวา 25 มม. และสูงจากขอบล่าง 10 มม.
 
-        // 2. ฟังก์ชันแชร์สรุปใบงานเข้าห้องแชตแอป LINE
-        function executeReportLine(jobUUID, customer, jobType, item, tech) {
-            const shareText = `📌 *GRT SERVICE REPORT*\n` +
-                              `เลขที่ใบงาน: ${jobUUID}\n` +
-                              `ลูกค้า: ${customer}\n` +
-                              `ประเภทงาน: ${jobType}\n` +
-                              `ชิ้นงาน: ${item}\n` +
-                              `ช่างผู้รับผิดชอบ: ${tech}\n` +
-                              `🔗 เปิดดูรายละเอียดใบงานเต็ม: ${window.location.origin}?job=${jobUUID}`;
-            
-            window.open(`https://line.me/R/msg/text/?${encodeURIComponent(shareText)}`, '_blank');
+
+            // จะแสดงผลเป็น: Page 1 of 2 (อยู่มุมขวาล่าง)
+            pdf.text(`Page ${i} of ${totalPages}`, pageWidth - 25, pageHeight - 10);
+
         }
+        
+        // 🎯 สั่งบันทึกไฟล์ผ่าน Object ของ jsPDF โดยตรง
+        pdf.save(options.filename);
+        
+    }).catch(err => { 
+        // ⚠️ ย้ายคำสั่งแจ้งเตือนมาดักจับตรงนี้ หากกระบวนการข้างบนเกิดปัญหา
+        console.error("PDF Generation Error:", err);
+        alert("เกิดข้อผิดพลาดระหว่างเจเนอเรตไฟล์ PDF"); 
+    });
+    
+    // ❌ [ลบคำสั่งซ้ำซ้อนเดิมตรงนี้ออกทั้งหมดเรียบร้อยแล้ว]
+}
+
+
 
         // 3. ฟังก์ชันสั่งพิมพ์เอกสารรายงานออกทางเครื่องพิมพ์
         function executeReportPrint(jobUUID, customer) {
@@ -511,13 +535,6 @@
             }
         }
 
-        // 4. ฟังก์ชันคัดลอกลิ้งก์ระบบลงคลิปบอร์ด
-        function executeReportCopyLink(jobUUID) {
-            const directLink = `${window.location.origin}?job=${jobUUID}`;
-            navigator.clipboard.writeText(directLink)
-                .then(() => { alert(`🔗 คัดลอกลิงก์ใบงาน ${jobUUID} เรียบร้อยแล้ว สามารถนำไปวางส่งต่อได้ทันทีครับ`); })
-                .catch(err => { alert(`ลิงก์ใบงานของคุณคือ: ${directLink}`); });
-        }
 
         // ====================================================================
         // 🛠️ ฟังก์ชันลบข้อมูลตาราง repair_jobs (Supabase)
@@ -571,5 +588,10 @@
             }
         }
     </script>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+<script src="app.js"></script>
+
 </body>
 </html>

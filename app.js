@@ -1,3 +1,5 @@
+
+
 // ==========================================
 // 🔐 1. ตั้งค่าและสร้างตัวเชื่อมต่อฐานข้อมูล Supabase 
 // ==========================================
@@ -7,7 +9,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==========================================
-// 🎨 ฟังก์ชันเสริม: ระบบตรวจจับพิกเซลนิ้ววาดและเมาส์ลากบน Canvas
+// 🎨 2. ระบบตรวจจับพิกเซลนิ้ววาดและเมาส์ลากบน Canvas (ฉบับแก้บั๊ก Touch เส้นขาด/เซ็นไม่ติด)
 // ==========================================
 function initCanvasDrawing(canvasId, color, thickness) {
     const canvas = document.getElementById(canvasId);
@@ -15,36 +17,60 @@ function initCanvasDrawing(canvasId, color, thickness) {
     const ctx = canvas.getContext('2d');
     let drawing = false;
 
+    // คำนวณตำแหน่งพิกเซลสัมผัสให้แม่นยำทุกขนาดหน้าจอ
     function getPos(e) {
         const rect = canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        let clientX = e.clientX;
+        let clientY = e.clientY;
+        
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        }
         return { 
             x: (clientX - rect.left) * (canvas.width / rect.width), 
             y: (clientY - rect.top) * (canvas.height / rect.height) 
         };
     }
-    function start(e) { drawing = true; draw(e); }
-    function stop() { drawing = false; ctx.beginPath(); }
+
+    function start(e) { 
+        drawing = true; 
+        const pos = getPos(e);
+        ctx.beginPath(); // เริ่มเส้นใหม่ทุกครั้งที่จิ้มนิ้วหรือคลิก
+        ctx.moveTo(pos.x, pos.y);
+    }
+    
+    function stop() { 
+        drawing = false; 
+    }
+    
     function draw(e) {
         if (!drawing) return;
-        e.preventDefault();
+        e.preventDefault(); // 🔥 สำคัญมาก: ล็อกหน้าจอมือถือไม่ให้เลื่อนหนีเวลาลากเส้น
         const pos = getPos(e);
         ctx.lineWidth = thickness;
         ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.strokeStyle = color;
         ctx.lineTo(pos.x, pos.y);
         ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y);
     }
-    canvas.addEventListener('mousedown', start); canvas.addEventListener('mouseup', stop); canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('touchstart', start, {passive: false}); canvas.addEventListener('touchend', stop); canvas.addEventListener('touchmove', draw, {passive: false});
+
+    // อีเวนต์สำหรับคอมพิวเตอร์ (Mouse)
+    canvas.addEventListener('mousedown', start); 
+    canvas.addEventListener('mouseup', stop); 
+    canvas.addEventListener('mouseleave', stop);
+    canvas.addEventListener('mousemove', draw);
+    
+    // อีเวนต์สำหรับมือถือ / แท็บเล็ต (Touch)
+    canvas.addEventListener('touchstart', start, {passive: false}); 
+    canvas.addEventListener('touchend', stop); 
+    canvas.addEventListener('touchmove', draw, {passive: false});
 }
 
 
 // ==========================================
-// ⚙️ 2. ระบบควบคุมรายการตรวจสอบหน้างาน (ฉบับปรับปรุง)
+// ⚙️ 3. ระบบควบคุมรายการตรวจสอบหน้างาน (Checklist)
 // ==========================================
 const defaultChecklists = [
     "ตรวจสอบความสะอาดและสภาพภายนอกตัวเครื่อง",
@@ -85,7 +111,7 @@ if(document.getElementById('btnAddChecklist')) {
 
 
 // ==========================================
-// ⚙️ 3. ระบบควบคุมฟิลด์อื่นๆ และ อะไหล่ไม่ครบ
+// ⚙️ 4. ระบบควบคุมฟิลด์อื่นๆ และ ตัวเลือกอะไหล่ไม่ครบ
 // ==========================================
 const partsRadios = document.querySelectorAll('input[name="partsStatus"]');
 partsRadios.forEach(radio => {
@@ -145,7 +171,7 @@ if(document.getElementById('jobTypeSelect')) {
 
 
 // ==========================================
-// 📸 4. ระบบจัดการเพิ่มรูปภาพและมาร์กจุดขัดข้อง (Dynamic Multi-Canvas)
+// 📸 5. ระบบเพิ่มรูปภาพขัดข้องและมาร์กจุดเสีย (Dynamic Multi-Canvas)
 // ==========================================
 let photoBlockCount = 1;
 
@@ -204,7 +230,7 @@ function clearCanvasContent(canvasId) {
 
 
 // ==========================================
-// 🚀 5. ฟังก์ชันส่งข้อมูลเข้าระบบ Supabase 
+// 🚀 6. ฟังก์ชันบันทึกข้อมูลและอัปโหลดภาพขึ้นคลาวด์ Supabase
 // ==========================================
 if(document.getElementById('btnSubmitJob')) {
     document.getElementById('btnSubmitJob').addEventListener('click', async () => {
@@ -309,7 +335,7 @@ if(document.getElementById('btnSubmitJob')) {
                 if(canvasElement) {
                     const uploadedUrl = await uploadCanvasToStorage(canvasElement.id, `${customerName}/${jobNum}/photo_${i+1}.png`);
                     if(uploadedUrl) {
-                        const descriptionText = (descElement && descElement.value) ? descElement.value : `ภาพถ่ายจุดขัดข้องใบที่ ${i+1}`;
+                        const descriptionText = (descElement && descElement.value) ? descElement.value : `ภาพถ่าย ${i+1}`;
                         await supabaseClient.from('job_photos').insert([{ 
                             job_id: jobId, 
                             photo_url: uploadedUrl, 
@@ -366,7 +392,7 @@ async function uploadCanvasToStorage(canvasId, path) {
 
 
 // ====================================================================
-// 🔥 ฟังก์ชันดึงข้อมูลคลาวด์มาเรนเดอร์ลงใน SERVICE REPORT
+// 🔥 7. ฟังก์ชันดึงข้อมูลคลาวด์มาเรนเดอร์ลงใน SERVICE REPORT (Preview ใบงาน)
 // ====================================================================
 async function viewFullDocument(jobId, jobNum, custName) {
     const previewContainer = document.getElementById('docPreviewContainer');
@@ -399,51 +425,44 @@ async function viewFullDocument(jobId, jobNum, custName) {
         const targetDate = jobDetail ? (jobDetail.repair_date || jobDetail.created_at) : null;
         const repairDate = targetDate ? new Date(targetDate).toLocaleDateString('th-TH', {year: 'numeric', month: 'long', day: 'numeric'}) : '-';
 
+        let checklistHTML = "";
 
+        // 1. กรองรายการอะไหล่
+        const partChecklists = checklists ? checklists.filter(c => c.checklist_item.includes("[อะไหล่ขาด]")) : [];
+        if(partChecklists.length > 0) {
+            checklistHTML += `
+            <div style="margin-top: 15px;"><b style="font-size:13px; color:#c53030;">📦 รายการอะไหล่ที่ขาด</b>
+            <table style="width:100%; border-collapse:collapse; margin-top:5px; font-size:12px;">`;
+            partChecklists.forEach((c, i) => {
+                const partName = c.checklist_item.replace("[อะไหล่ขาด]: ", "");
+                checklistHTML += `
+                    <tr style="background-color: #fff5f5;">
+                        <td style="border: 1px solid #feb2b2; padding: 6px; width: 5%; text-align:center;">${i + 1}</td>
+                        <td style="border: 1px solid #feb2b2; padding: 6px; color:#c53030; font-weight:bold;">⚠️ ${partName}</td>
+                        <td style="border: 1px solid #feb2b2; padding: 6px; width: 25%; text-align:center; color:#c53030;">สถานะ: ขาด</td>
+                    </tr>`;
+            });
+            checklistHTML += `</table></div>`;
+        }
 
+        // 2. กรองรายการ Checklist ปกติ
+        const normalChecklists = checklists ? checklists.filter(c => !c.checklist_item.includes("[อะไหล่ขาด]")) : [];
+        if(normalChecklists.length > 0) {
+            checklistHTML += `
+            <div style="margin-top: 15px;"><b style="font-size:13px; color:#1a365d;">📋 ผลการตรวจสอบหน้างาน (Checklist)</b>
+            <table style="width:100%; border-collapse:collapse; margin-top:5px; font-size:12px;">`;
+            normalChecklists.forEach((c, i) => {
+                let badgeColor = c.status.includes("ปกติ") || c.status.includes("Pass") ? "#2f855a" : "#c53030";
+                checklistHTML += `
+                    <tr>
+                        <td style="border: 1px solid #cbd5e0; padding: 6px; width: 5%; text-align:center; background:#f7fafc;">${i + 1}</td>
+                        <td style="border: 1px solid #cbd5e0; padding: 6px;">${c.checklist_item}</td>
+                        <td style="border: 1px solid #cbd5e0; padding: 6px; width: 25%; text-align:center; font-weight:bold; color:${badgeColor}">${c.status}</td>
+                    </tr>`;
+            });
+            checklistHTML += `</table></div>`;
+        }
 
-
-// เปลี่ยนจากการประกาศตัวแปรใหม่ เป็นการเติมค่าเข้าไป
-let checklistHTML = "";
-
-// 1. กรองรายการอะไหล่
-const partChecklists = checklists ? checklists.filter(c => c.checklist_item.includes("[อะไหล่ขาด]")) : [];
-if(partChecklists.length > 0) {
-    checklistHTML += `
-    <div style="margin-top: 15px;"><b style="font-size:13px; color:#c53030;">📦 รายการอะไหล่ที่ขาด</b>
-    <table style="width:100%; border-collapse:collapse; margin-top:5px; font-size:12px;">`;
-    partChecklists.forEach((c, i) => {
-        const partName = c.checklist_item.replace("[อะไหล่ขาด]: ", "");
-        checklistHTML += `
-            <tr style="background-color: #fff5f5;">
-                <td style="border: 1px solid #feb2b2; padding: 6px; width: 5%; text-align:center;">${i + 1}</td>
-                <td style="border: 1px solid #feb2b2; padding: 6px; color:#c53030; font-weight:bold;">⚠️ ${partName}</td>
-                <td style="border: 1px solid #feb2b2; padding: 6px; width: 25%; text-align:center; color:#c53030;">สถานะ: ขาด</td>
-            </tr>`;
-    });
-    checklistHTML += `</table></div>`;
-}
-
-// 2. กรองรายการ Checklist ปกติ (ต่อท้ายจากเดิม)
-const normalChecklists = checklists ? checklists.filter(c => !c.checklist_item.includes("[อะไหล่ขาด]")) : [];
-if(normalChecklists.length > 0) {
-    checklistHTML += `
-    <div style="margin-top: 15px;"><b style="font-size:13px; color:#1a365d;">📋 ผลการตรวจสอบหน้างาน (Checklist)</b>
-    <table style="width:100%; border-collapse:collapse; margin-top:5px; font-size:12px;">`;
-    normalChecklists.forEach((c, i) => {
-        let badgeColor = c.status.includes("ปกติ") || c.status.includes("Pass") ? "#2f855a" : "#c53030";
-        checklistHTML += `
-            <tr>
-                <td style="border: 1px solid #cbd5e0; padding: 6px; width: 5%; text-align:center; background:#f7fafc;">${i + 1}</td>
-                <td style="border: 1px solid #cbd5e0; padding: 6px;">${c.checklist_item}</td>
-                <td style="border: 1px solid #cbd5e0; padding: 6px; width: 25%; text-align:center; font-weight:bold; color:${badgeColor}">${c.status}</td>
-            </tr>`;
-    });
-    checklistHTML += `</table></div>`;
-}
-
-
-        
         let photosHTML = "";
         if(photos && photos.length > 0) {
             photosHTML += `<div style="margin-top: 15px; page-break-inside: avoid;"><b style="font-size:13px; color:#1a365d;">📷 ภาพถ่ายจุดขัดข้องและการวิเคราะห์หน้างาน</b><div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">`;
@@ -478,23 +497,13 @@ if(normalChecklists.length > 0) {
                          <div style="font-size: 11px; color: #1a365d; white-space: nowrap;">
                          <b>Job No:</b> <span style="color:#e53e3e; font-weight:bold;">${jobUUID}</span>
                      </div>
-</div>
+                </div>
                 </div>
 
                 <div class="report-action-group" data-html2pdf-ignore="true" style="margin-top: -5px; margin-bottom: 15px; background: #f7fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
                     <button type="button" onclick="executeReportPDF('${jobUUID}')" class="btn-report-ctrl btn-pdf-row">📥 เซฟเป็นไฟล์ PDF</button>
-                    <button type="button" onclick="executeReportLine('${jobUUID}', '${finalCustomer}', '${finalJobType}', '${itemName}', '${techName}')" class="btn-report-ctrl btn-line-share">🟢 ส่งเข้าไลน์ (LINE)</button>
                     <button type="button" onclick="executeReportPrint('${jobUUID}', '${finalCustomer}')" class="btn-report-ctrl btn-print-row">🖨️ สั่งพิมพ์ใบงาน</button>
-                    <button type="button" onclick="executeReportCopyLink('${jobUUID}')" class="btn-report-ctrl btn-share">🔗 คัดลอกลิงก์แชร์</button>
-
-                    <button type="button" onclick="deleteJobRow('${jobId}', '${jobUUID}'); closeViewDocModal();" 
-            style="background:#f56565; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; font-size:12px; margin-left: 5px;">
-        🗑️ ลบใบงาน
-    </button>
-
-
-
-
+                    <button type="button" onclick="deleteJobRow('${jobId}', '${jobUUID}'); closeViewDocModal();" style="background:#f56565; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; font-size:12px; margin-left: 5px;">🗑️ ลบใบงาน</button>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: #4a5568;">
@@ -558,7 +567,7 @@ if(normalChecklists.length > 0) {
 
 
 // ==========================================
-// 🛠️ 6. ฟังก์ชันควบคุมโมดอลและการแก้ไขข้อมูล
+// 🛠️ 8. ฟังก์ชันควบคุมโมดอลและการแก้ไขข้อมูลย้อนหลัง
 // ==========================================
 function openEditModal(id, currentCust, currentJobType, currentTech) {
     document.getElementById('editJobId').value = id;
@@ -606,9 +615,9 @@ function shareJobReport(jobNum, custName) {
 }
 
 
-// ==========================================================
-// 📊 7. ระบบดึงประวัติและเรนเดอร์ข้อมูลลงตาราง
-// ==========================================================
+// ==========================================
+// 📊 9. ระบบดึงประวัติงานซ่อมและเรนเดอร์ข้อมูลลงตาราง (พร้อมระบบค้นหา/คัดกรอง)
+// ==========================================
 let localCachedJobs = []; 
 
 async function loadHistoryData() {
@@ -639,19 +648,16 @@ function filterData() {
     
     let filtered = localCachedJobs;
 
-    // 1. กรองตามลูกค้า
+    // 1. กรองตามชื่อบริษัทลูกค้า
     if (customerFilter !== "ALL") {
         filtered = filtered.filter(job => job.customer_name === customerFilter);
     }
 
-    // 2. กรองตามช่วงวันที่
+    // 2. กรองตามช่วงวันที่ซ่อมบำรุง
     filtered = filtered.filter(job => {
         if (!job.repair_date) return false;
+        const jobDate = job.repair_date.split('T')[0]; // ตัดเวลาเหลือเฉพาะ YYYY-MM-DD
         
-        // แปลงวันที่งานเป็น YYYY-MM-DD
-        const jobDate = job.repair_date.split('T')[0]; 
-        
-        // ตรวจสอบเงื่อนไขวันที่
         let isAfterStart = dateStart ? jobDate >= dateStart : true;
         let isBeforeEnd = dateEnd ? jobDate <= dateEnd : true;
         
@@ -665,10 +671,8 @@ function resetFilters() {
     document.getElementById('filterCustomer').value = "ALL";
     document.getElementById('filterDateStart').value = "";
     document.getElementById('filterDateEnd').value = "";
-    
     renderTable(localCachedJobs);
 }
-
 
 function renderTable(jobsList) {
     const tableBody = document.getElementById('historyTableBody');
@@ -696,21 +700,22 @@ function renderTable(jobsList) {
             </tr>
         `;
     }).join('');
-
 }
 
 
 // ==========================================
-// ⏳ 8. สั่งเปิดบอร์ดวาดภาพและโหลดข้อมูลตารางทันทีเมื่อหน้าเว็บพร้อมทำงาน
+// ⏳ 10. บูตระบบกระดานวาด/เซ็นชื่อ และโหลดข้อมูลตารางทันทีเมื่อเว็บพร้อมทำงาน
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-    // โหลดตารางประวัติจากคลาวด์ทันที
+    // 1. โหลดข้อมูลประวัติและตารางจากคลาวด์ค้างไว้ทันที
     loadHistoryData();
 
-    // บูตระบบบอร์ดวาดรูปภาพชุดแรก
-    initCanvasDrawing('markupCanvas_1', 'red', 4);
+    // 2. 🔥 เปิดระบบกระดานเซ็นชื่อลูกค้า ช่าง และทำเครื่องหมายบนรูปภาพใบแรกสุดให้อัตโนมัติ
+    initCanvasDrawing('customerSigCanvas', '#0f172a', 3.5); // ลายเซ็นลูกค้า (สีน้ำเงินเข้ม ปากกาหนา 3.5)
+    initCanvasDrawing('techSigCanvas', '#0f172a', 3.5);     // ลายเซ็นช่าง (สีน้ำเงินเข้ม ปากกาหนา 3.5)
+    initCanvasDrawing('markupCanvas_1', 'red', 4);          // รูปมาร์กจุดเสียใบแรก (สีแดง ปากกาหนา 4)
 
-    // ผูกคำสั่งปุ่มล้างลายเซ็นต์ให้ปลอดภัย
+    // 3. ผูกระบบคำสั่งปุ่มล้างลายเซ็นต์และล้างรูปวาดให้ปลอดภัย
     if(document.getElementById('btnClearCustSig')) {
         document.getElementById('btnClearCustSig').addEventListener('click', () => clearCanvasContent('customerSigCanvas'));
     }
