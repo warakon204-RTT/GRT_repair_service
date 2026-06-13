@@ -2,657 +2,81 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ระบบบันทึกงานซ่อมองค์กร (เวอร์ชันอัปเกรด)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRT MANAGEMENT DASHBOARD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* สไตล์เพิ่มเติมสำหรับระบบแท็บ ตาราง และ Layout ใหม่ */
-        .tab-navigation { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        .tab-btn { padding: 10px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border: none; background: #edf2f7; border-radius: 5px; color: #4a5568; transition: 0.3s; }
-        .tab-btn.active { background: #3182ce; color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .filter-bar { display: flex; flex-wrap: wrap; gap: 15px; background: #f7fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
-        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; font-size: 14px; }
-        .data-table th, .data-table td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
-        .data-table th { background-color: #ebf8ff; color: #2b6cb0; }
-        .data-table tr:hover { background-color: #f7fafc; }
-        .action-btn { padding: 5px 10px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; color: white; display: inline-block; margin-bottom: 2px; }
-        .btn-view-doc { background-color: #4a5568; }
-        .btn-edit { background-color: #dd6b20; }
-        .btn-delete { background-color: #e53e3e; }
-        
-        /* สไตล์ชุดปุ่มควบคุมภายในหน้าใบงาน SERVICE REPORT */
-        .report-action-group { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
-        .btn-report-ctrl { padding: 6px 14px; font-size: 13px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: 0.2s; }
-        .btn-report-ctrl:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-pdf-row { background-color: #e53e3e; } 
-        .btn-line-share { background-color: #06C755; }
-        .btn-print-row { background-color: #3182ce; }
-        .btn-share { background-color: #38a169; }
-        
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 650px; max-height: 85vh; overflow-y: auto; }
-        
-        /* สไตล์สำหรับกล่องรูปภาพและ Checklist */
-        .photo-block { border: 1px dashed #cbd5e0; padding: 15px; margin-bottom: 15px; border-radius: 6px; background: #f7fafc; }
-        .checklist-row { background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 8px; }
-        .part-row { display: flex; gap: 10px; margin-bottom: 8px; }
-        
-        /* สไตล์พิเศษสำหรับช่องรายละเอียดชิ้นงานซ่อมใหม่ */
-        .item-form-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px; }
-        @media (max-width: 480px) {
-            .item-form-grid { grid-template-columns: 1fr; gap: 10px; }
-        }
-    </style>
-
-    <link rel="apple-touch-icon" href="LGRT11.jpg">
-    <link rel="apple-touch-icon" sizes="180x180" href="LGRT11.jpg">
-    <link rel="icon" type="image/jpeg" sizes="192x192" href="LGRT11.jpg">
-    <link rel="icon" type="image/jpeg" sizes="32x32" href="LGRT11.jpg">
-
-
-
-
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-
-    <div class="app-container">
-        
-        <div class="tab-navigation">
-            <button class="tab-btn active" onclick="switchTab(event, 'form-tab')">📝 บันทึกงานซ่อมใหม่</button>
-            <button class="tab-btn" onclick="switchTab(event, 'data-tab'); loadHistoryData();">📊 ประวัติข้อมูลลูกค้า</button>
+<div class="container">
+    <header style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap;">
+        <div>
+            <h1>📊 GRT MANAGEMENT DASHBOARD</h1>
+            <p>บริษัท กราฟิก อาร์ที ดีไซนส์ จำกัด (GRAPHIC RT DESIGNS CO., LTD.)</p>
         </div>
+        <a href="form.html" class="btn btn-primary" style="background:#0284c7; text-decoration:none;">➕ เปิดฟอร์มบันทึกใบงานใหม่</a>
+    </header>
+    <hr style="border: 1px dashed #e2e8f0; margin: 25px 0;">
 
-        <div id="form-tab" class="tab-content active">
-            <header>
-                <img src="LGRT11.jpg" alt="Company Logo" class="brand-logo">
-                <h2>GRT Service Report</h2>
-                
-                <div class="form-grid">
-                    <div class="form-group-block">
-                        <label>บริษัทลูกค้า</label>
-                        <select id="customerSelect" onchange="toggleOtherInput(this, 'customerNameOther')">
-                            <option value="CAC">CAC</option>
-                            <option value="CBI">CBI</option>
-                            <option value="OTHER">อื่นๆ (ระบุเอง) ➔</option>
-                        </select>
-                        <input type="text" id="customerNameOther" class="hidden-input" placeholder="ระบุชื่อบริษัทลูกค้า" style="margin-top: 5px; width: 100%;">
-                    </div>
-
-                    <div class="form-group-block">
-                        <label>ประเภทงาน</label>
-                        <select id="jobTypeSelect" onchange="toggleOtherInput(this, 'jobTypeOther')">
-                            <option value="เคลม">เคลม (Claim)</option>
-                            <option value="ซ่อม">ซ่อม (Repair)</option>
-                            <option value="ผลิตใหม่">ผลิตใหม่ (Remanufacture)</option>
-                            <option value="RE-MACHINE">RE-MACHINE</option>
-                            <option value="OTHER">อื่นๆ (ระบุเอง) ➔</option>
-                        </select>
-                        <input type="text" id="jobTypeOther" class="hidden-input" placeholder="ระบุประเภทงานอื่นๆ" style="margin-top: 5px; width: 100%;">
-                    </div>
-                </div>
-
-                <div class="form-group" style="width: 100%; margin-top: 15px; margin-bottom: 20px;">
-                    <label style="font-weight: bold;">เลขที่ใบงาน <span style="color: red; font-size: 12px;">*ระบบรันอัตโนมัติ*</span></label>
-                    <input type="text" id="jobUUID" readonly placeholder="⏳ กำลังรันเลขใบงาน..." 
-                           style="background-color: #edf2f7; color: #2b6cb0; font-weight: bold; cursor: not-allowed; width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0;">
-                </div>
-
-                <div style="background: #f7fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
-                    <h4 style="margin: 0 0 12px 0; color: #2b6cb0; font-size: 15px; border-bottom: 2px solid #cbd5e0; padding-bottom: 5px;">📦 รายละเอียด</h4>
-                    
-                    <div class="item-form-grid">
-                        <div>
-                            <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;">ชื่อชิ้นงาน</label>
-                            <input type="text" id="addItemName" placeholder="เช่น MOLD, JIG" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif;">
-                        </div>
-                        <div>
-                            <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;">จำนวน</label>
-                            <input type="number" id="addItemQty" value="1" min="1" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif;">
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;">โมเดล / รุ่น / ซีเรียลนัมเบอร์</label>
-                        <input type="text" id="addItemModel" placeholder="เช่น BMW / RS3" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif;">
-                    </div>
-
-                    <div style="margin-bottom: 5px;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;">รายละเอียดงาน / อาการชำรุดขัดข้อง</label>
-                        <textarea id="addJobDescription" rows="3" placeholder="ระบุลักษณะงานซ่อม ขอบเขตอาการชำรุด หรือข้อมูลการแก้ไขหน้างานเพิ่มเติม..." style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; resize: vertical;"></textarea>
-                    </div>
-                </div>
-            </header>
-
-            <section class="parts-section">
-                <h3>การตรวจสอบอะไหล่ / อุปกรณ์</h3>
-                <div class="radio-group">
-                    <label><input type="radio" name="partsStatus" value="ครบถ้วน" checked> อะไหล่ครบถ้วน</label>
-                    <label><input type="radio" name="partsStatus" value="ไม่ครบ"> อะไหล่ไม่ครบ (ระบุรายการ)</label>
-                </div>
-                
-                <div id="missingPartsContainer" class="hidden-input">
-                    <div id="partsList"></div>
-                    <button id="btnAddPart" type="button" class="btn-secondary">+ เพิ่มรายการอะไหล่ที่ขาด</button>
-                    <div style="margin-top: 10px;">
-                        <label>📝 รายละเอียด/หมายเหตุเกี่ยวกับอะไหล่เพิ่มเติม:</label>
-                        <textarea id="partsNotes" rows="2" style="width:100%; padding:8px; border-radius:4px; border:1px solid #cbd5e0; font-family: 'Sarabun', sans-serif;" placeholder=""></textarea>
-                    </div>
-                </div>
-            </section>
-
-            <section class="checklist-section">
-                <h3>📝รายการตรวจสอบ</h3>
-                <div id="checklistContainer"></div>
-                <button id="btnAddChecklist" type="button" class="btn-secondary">+ เพิ่มหัวข้อ</button>
-            </section>
-
-            <section class="markup-section">
-                <h3>รูปถ่าย</h3>
-                <div id="photosContainer">
-                    <div class="photo-block" id="photoBlock_1">
-                        <p style="font-weight: bold; color: #2b6cb0;">📷 รูปภาพที่ 1</p>
-                        <div style="margin-bottom: 10px; display: flex; gap: 10px;">
-                            <input type="file" class="camera-input" accept="image/*" onchange="handleImageUpload(this, 'markupCanvas_1')">
-                        </div>
-                        <div class="canvas-wrapper">
-                            <canvas id="markupCanvas_1" width="500" height="350" style="background: #e2e8f0; max-width: 100%;"></canvas>
-                        </div>
-                        <div style="margin-top: 5px;">
-                            <input type="text" class="photo-desc-input" placeholder="คำอธิบายภาพถ่ายใบนี้ (เช่น จุดที่ต้องแก้ไข/ซ่อม/สั่งเพิ่ม)" style="width: 100%; padding: 8px; margin-bottom: 5px;">
-                            <button type="button" class="btn-danger-sm" onclick="clearCanvasContent('markupCanvas_1')">ล้างรอยวาดรูปนี้</button>
-                        </div>
-                    </div>
-                </div>
-                <button id="btnAddPhotoBlock" type="button" class="btn-secondary" style="background-color: #4c51bf;">➕ เพิ่มรูปภาพหน้างานเพิ่ม</button>
-            </section>
-
-<section class="signature-section">
-    <div class="sig-block-form">
-        <label style="font-weight: bold; display: block; margin-bottom: 5px;">🖋️ ลายเซ็นลูกค้า</label>
-        <canvas id="customerSigCanvas" width="300" height="150" style="border:1px dashed #cbd5e0; background:#fff; display: block; border-radius: 4px;"></canvas>
-        
-        <button type="button" onclick="clearCanvas('customerSigCanvas')" style="margin-top: 8px; padding: 6px 14px; font-size: 12px; font-weight: bold; background: #f7fafc; border: 1px solid #cbd5e0; border-radius: 4px; cursor: pointer; color: #4a5568; transition: 0.2s;" onmouseover="this.style.background='#e53e3e'; this.style.color='#fff'; this.style.borderColor='#e53e3e'" onmouseout="this.style.background='#f7fafc'; this.style.color='#4a5568'; this.style.borderColor='#cbd5e0'">ล้างรอยวาด</button>
-        
-        <div style="margin-top: 12px;">
-            <label style="font-size: 13px; color: #4a5568;">👤 ชื่อลูกค้า:</label>
-            <input type="text" id="printedCustomerName" placeholder="พิมพ์ชื่อลูกค้า" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px; font-family:'Sarabun', sans-serif;">
+    <section style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;">
+        <div style="background:#fff; border-left:5px solid #1e3a8a; padding:20px; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1); border:1px solid #e2e8f0;">
+            <p style="margin:0; color:#64748b;">จำนวนใบงานซ่อมบำรุงทั้งหมด</p>
+            <h3 id="counterTotalJobs" style="font-size:28px; margin:5px 0 0 0;">0</h3>
         </div>
-    </div>
-
-    <div class="sig-block-form" style="margin-top: 20px; border-top: 1px dashed #e2e8f0; padding-top: 15px;">
-        <label style="font-weight: bold; display: block; margin-bottom: 5px;">🛠️ ลายเซ็นผู้รับงาน (GRT)</label>
-        <canvas id="techSigCanvas" width="300" height="150" style="border:1px dashed #cbd5e0; background:#fff; display: block; border-radius: 4px;"></canvas>
-        
-        <button type="button" onclick="clearCanvas('techSigCanvas')" style="margin-top: 8px; padding: 6px 14px; font-size: 12px; font-weight: bold; background: #f7fafc; border: 1px solid #cbd5e0; border-radius: 4px; cursor: pointer; color: #4a5568; transition: 0.2s;" onmouseover="this.style.background='#e53e3e'; this.style.color='#fff'; this.style.borderColor='#e53e3e'" onmouseout="this.style.background='#f7fafc'; this.style.color='#4a5568'; this.style.borderColor='#cbd5e0'">ล้างรอยวาด</button>
-        
-        <div style="margin-top: 12px;">
-            <label style="font-size: 13px; color: #4a5568;">👤 ชื่อผู้รับงาน:</label>
-            <input type="text" id="printedTechName" placeholder="พิมพ์ชื่อผู้รับงาน" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px; font-family:'Sarabun', sans-serif;">
+        <div style="background:#fff; border-left:5px solid #10b981; padding:20px; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1); border:1px solid #e2e8f0;">
+            <p style="margin:0; color:#64748b;">จำนวนลูกค้าในระบบ</p>
+            <h3 id="counterCustomers" style="font-size:28px; margin:5px 0 0 0;">0</h3>
         </div>
-    </div>
-</section>
+    </section>
 
-            <footer>
-                <button id="btnSubmitJob" class="btn-success">บันทึกข้อมูล</button>
-   
-            </footer>
+    <section style="background:#f1f5f9; padding:20px; border-radius:6px; border:1px solid #cbd5e1; margin-bottom:25px;">
+        <div style="display:flex; gap:15px; flex-wrap:wrap; align-items:flex-end;">
+            <div style="flex:1; min-width:200px;">
+                <label>กรองรายชื่อบริษัทลูกค้า</label>
+                <select id="filterCustomer" onchange="filterData()"><option value="ALL">แสดงทั้งหมด</option></select>
+            </div>
+            <div style="flex:1; min-width:150px;"><label>ตั้งแต่วันที่</label><input type="date" id="filterDateStart" onchange="filterData()"></div>
+            <div style="flex:1; min-width:150px;"><label>ถึงวันที่</label><input type="date" id="filterDateEnd" onchange="filterData()"></div>
+            <button type="button" class="btn btn-primary" onclick="resetFilters()" style="background:#475569; height:40px;">🔄 รีเซ็ต</button>
         </div>
+    </section>
 
-        <div id="data-tab" class="tab-content">
-            <h3>📊 ประวัติและแดชบอร์ดงานซ่อมบำรุง</h3>
-
-<div class="filter-bar">
-    <div style="flex: 1; min-width: 150px;">
-        <label>คัดแยกตามลูกค้า:</label>
-        <select id="filterCustomer" onchange="filterData()">
-            <option value="ALL">-- ลูกค้าทั้งหมด --</option>
-            <option value="CAC">CAC</option>
-            <option value="CBI">CBI</option>
-        </select>
-    </div>
-    <div style="flex: 1; min-width: 150px;">
-        <label>จากวันที่:</label>
-        <input type="date" id="filterDateStart" onchange="filterData()">
-    </div>
-    <div style="flex: 1; min-width: 150px;">
-        <label>ถึงวันที่:</label>
-        <input type="date" id="filterDateEnd" onchange="filterData()">
-    </div>
-    <div style="display: flex; align-items: flex-end;">
-        <button type="button" onclick="resetFilters()" class="btn-secondary">🔄 ล้างตัวกรอง</button>
+    <div class="table-responsive">
+        <table class="industrial-table">
+            <thead>
+                <tr>
+                    <th>วันที่ปฏิบัติการ</th><th>รหัสเลขใบงาน</th><th>ชื่อบริษัทลูกค้า</th><th>อุปกรณ์</th><th>ประเภทงาน</th><th>ผู้บันทึก</th><th>จัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="historyTableBody"></tbody>
+        </table>
     </div>
 </div>
 
-            <div style="overflow-x: auto;">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>วันที่ระบบ</th>
-                            <th>เลขที่ใบงาน</th>
-                            <th>ชื่อลูกค้า</th>
-                            <th>ชื่อชิ้นงาน / อุปกรณ์</th>
-                            <th>ประเภทงาน</th>
-                            <th>ช่างผู้รับผิดชอบ</th>
-                            <th>การจัดการข้อมูลหน้างาน</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTableBody">
-                        <tr>
-                            <td colspan="7" style="text-align: center; color: #a0aec0;">⏳ กำลังโหลดข้อมูลประวัติคลาวด์...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
+<div id="viewDocModal" class="modal-overlay">
+    <div class="modal-content">
+        <button type="button" onclick="closeViewDocModal()" class="btn btn-primary" style="background:#64748b; margin-bottom:15px;">❌ ปิดหน้าต่างพรีวิว</button>
+        <div id="docPreviewContainer"></div>
     </div>
+</div>
 
-    <div id="viewDocModal" class="modal">
-        <div class="modal-content" style="max-width: 700px;">
-            
-            <div id="docPreviewContainer" style="background: white; padding:10px; border-radius:6px; font-size:14px; line-height:1.6; margin-bottom:15px;">
-                ⏳ กำลังเรียกเนื้อหาตัวอย่างรายงาน...
-            </div>
-            
-            <div style="display:flex; justify-content:flex-end; border-top: 1px solid #e2e8f0; padding-top: 15px;">
-                <button type="button" onclick="closeViewDocModal()" style="padding:8px 25px; background:#4a5568; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">ปิดหน้าต่าง</button>
-            </div>
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content" style="max-width:500px;">
+        <h3>✏️ แก้ไขข้อมูลใบงาน</h3>
+        <input type="hidden" id="editJobId">
+        <div class="form-group"><label>ชื่อบริษัทลูกค้า</label><input type="text" id="editCustomerName"></div>
+        <div class="form-group"><label>ประเภทงานบริการ</label><input type="text" id="editJobType"></div>
+        <div class="form-group"><label>ช่างผู้รับผิดชอบ</label><input type="text" id="editTechName"></div>
+        <div class="form-group"><label>รายละเอียดเพิ่มเติม</label><input type="text" id="editDescription"></div>
+       
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+            <button type="button" onclick="closeEditModal()" class="btn" style="background:#64748b; color:#fff;">ยกเลิก</button>
+            <button type="button" onclick="updateJobData()" class="btn btn-success">💾 บันทึก</button>
         </div>
     </div>
-
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <h4>✏️ แก้ไขข้อมูลใบงานซ่อมบำรุง</h4>
-            <input type="hidden" id="editJobId">
-            <div style="margin-bottom: 12px;">
-                <label style="display:block; margin-bottom:5px;">ชื่อบริษัทลูกค้า</label>
-                <input type="text" id="editCustomerName" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px;">
-            </div>
-            <div style="margin-bottom: 12px;">
-                <label style="display:block; margin-bottom:5px;">ชื่อชิ้นงาน / เครื่องมือ</label>
-                <input type="text" id="editItemName" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px;">
-            </div>
-            <div style="margin-bottom: 12px;">
-                <label style="display:block; margin-bottom:5px;">ประเภทงาน</label>
-                <input type="text" id="editJobType" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px;">
-            </div>
-            <div style="margin-bottom: 12px;">
-                <label style="display:block; margin-bottom:5px;">ชื่อช่างหน้างาน</label>
-                <input type="text" id="editTechName" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px;">
-            </div>
-            <div style="margin-bottom: 12px;">
-                <label style="display:block; margin-bottom:5px;">รายละเอียดงาน / อาการชำรุด</label>
-                <textarea id="editJobDescription" rows="3" style="width:100%; padding:8px; border:1px solid #cbd5e0; border-radius:4px; font-family:'Sarabun', sans-serif; resize:vertical;"></textarea>
-            </div>
-            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
-                <button type="button" onclick="closeEditModal()" style="padding:8px 15px; background:#e2e8f0; border:none; border-radius:4px; cursor:pointer;">ยกเลิก</button>
-                <button type="button" onclick="updateJobData()" style="padding:8px 15px; background:#38a169; color:white; border:none; border-radius:4px; cursor:pointer;">💾 อัปเดตบันทึก</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="app.js"></script>
-    
-    <script>
-        function switchTab(event, tabId) {
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            if (event && event.currentTarget) {
-                event.currentTarget.classList.add('active');
-            }
-        }
-
-        function generateJobNumber() {
-            const now = new Date();
-            const datePart = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
-            const randomPart = Math.floor(1000 + Math.random() * 9000);
-            return `GRT-${datePart}-${randomPart}`;
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const jobInput = document.getElementById('jobUUID');
-            if (jobInput) {
-                jobInput.value = generateJobNumber();
-            }
-
-            // ผูกฟังก์ชันเข้ากับปุ่มเปิดพรีวิวหน้าฟอร์มหลัก
-            const btnDownloadPDF = document.getElementById('btnDownloadPDF');
-            if (btnDownloadPDF) {
-                btnDownloadPDF.onclick = () => {
-                    const jobUUID = document.getElementById('jobUUID')?.value || 'NEW-JOB';
-                    const customerSelect = document.getElementById('customerSelect')?.value || '';
-                    openViewDocModal('', jobUUID, customerSelect);
-                };
-            }
-        });
-
-        // ====================================================================
-        // 🔥 ฟังก์ชันเจเนอเรต SERVICE REPORT และผูกชุดปุ่มควบคุมการทำงาน
-        // ====================================================================
-        function openViewDocModal(jobId, jobNum, customerName) {
-            const modal = document.getElementById('viewDocModal');
-            if(modal) modal.style.display = 'flex';
-            
-            const previewContainer = document.getElementById('docPreviewContainer');
-            if(previewContainer) {
-                previewContainer.innerHTML = `⏳ กำลังประมวลผลโครงสร้างเอกสาร...`;
-            }
-            
-            // 1. ดึงค่าเรียลไทม์ปัจจุบันจากหน้ากรอกข้อมูลหลักก่อน
-            let jobUUID = document.getElementById('jobUUID')?.value || jobNum;
-            let customerSelect = document.getElementById('customerSelect')?.value || customerName;
-            let jobTypeSelect = document.getElementById('jobTypeSelect')?.value || '-';
-            let itemName = document.getElementById('addItemName')?.value || '-';
-            let itemQty = document.getElementById('addItemQty')?.value || '1';
-            let itemModel = document.getElementById('addItemModel')?.value || '-';
-            let jobDesc = document.getElementById('addJobDescription')?.value || 'ไม่มีรายละเอียดเพิ่มเติม';
-            let techName = document.getElementById('printedTechName')?.value || '-';
-            let printedCustomerName = document.getElementById('printedCustomerName')?.value || '-';
-            
-            let partsStatusElement = document.querySelector('input[name="partsStatus"]:checked');
-            let partsStatus = partsStatusElement ? partsStatusElement.value : 'ครบถ้วน';
-            let partsNotes = document.getElementById('partsNotes')?.value || '-';
-
-            // 2. ถ้ามีไอดีกดมาจากประวัติตาราง ให้ดึงค่าจากแคชคลาวด์มาสวมแทน
-            if (jobId && typeof localCachedJobs !== 'undefined') {
-                const targetJob = localCachedJobs.find(j => j.id == jobId);
-                if (targetJob) {
-                    jobUUID = targetJob.job_number || targetJob.job_uuid || jobNum;
-                    customerSelect = targetJob.customer_name || targetJob.customer || customerName;
-                    jobTypeSelect = targetJob.job_type || '-';
-                    itemName = targetJob.item_name || '-';
-                    itemQty = targetJob.qty || targetJob.item_qty || '1';
-                    itemModel = targetJob.model || targetJob.item_model || '-';
-                    jobDesc = targetJob.job_description || targetJob.description || 'ไม่มีรายละเอียดเพิ่มเติม';
-                    techName = targetJob.tech_name || targetJob.printed_tech_name || '-';
-                    printedCustomerName = targetJob.customer_name_printed || '-';
-                    partsStatus = targetJob.parts_status || 'ครบถ้วน';
-                    partsNotes = targetJob.parts_notes || '-';
-                }
-            }
-
-            const finalCustomer = customerSelect === 'OTHER' ? (document.getElementById('customerNameOther')?.value || 'ระบุอื่นๆ') : customerSelect;
-            const finalJobType = jobTypeSelect === 'OTHER' ? (document.getElementById('jobTypeOther')?.value || 'ระบุอื่นๆ') : jobTypeSelect;
-
-            // 🖋️ ดึงรอยวาดภาพลายเซ็นจาก Canvas แปลงเป็น Base64 Data URL
-            let customerSigImg = "";
-            let techSigImg = "";
-            const customerSigCanvas = document.getElementById('customerSigCanvas');
-            const techSigCanvas = document.getElementById('techSigCanvas');
-            
-            if (customerSigCanvas) {
-                try {
-                    const ctx = customerSigCanvas.getContext('2d');
-                    const buffer = ctx.getImageData(0, 0, customerSigCanvas.width, customerSigCanvas.height);
-                    if(buffer.data.some(channel => channel !== 0)) { customerSigImg = customerSigCanvas.toDataURL("image/png"); }
-                } catch(e) {}
-            }
-            if (techSigCanvas) {
-                try {
-                    const ctx = techSigCanvas.getContext('2d');
-                    const buffer = ctx.getImageData(0, 0, techSigCanvas.width, techSigCanvas.height);
-                    if(buffer.data.some(channel => channel !== 0)) { techSigImg = techSigCanvas.toDataURL("image/png"); }
-                } catch(e) {}
-            }
-
-            // 3. ประกอบข้อมูลลงในหน้า SERVICE REPORT (ปรับโครงสร้างลายเซ็นเป็น Table เพื่อป้องกันการหายใน PDF)
-if(previewContainer) {
-    previewContainer.innerHTML = `
-        <div id="pdfActiveArea" style="font-family: 'Sarabun', sans-serif; color: #000; padding: 5px 15px 15px 15px; box-sizing: border-box; background: white; border: 1px solid #cbd5e0; border-radius: 4px;">
-            
-            <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 10px;">
-                <h2 style="margin: 0 0 3px 0; color: #1a365d; font-size: 21px; font-weight: bold; letter-spacing: 0.5px;">GRT SERVICE REPORT</h2>
-                <p style="margin: 0; font-size: 12.5px; color: #4a5568;">รายงานผลการบันทึกงานซ่อมบำรุงและตรวจเช็กหน้างาน</p>
-                
-                <div class="report-action-group" data-html2pdf-ignore="true" style="margin-top: 8px;">
-                    <button type="button" onclick="executeReportPDF('${jobUUID}')" class="btn-report-ctrl btn-pdf-row">📥 เซฟ PDF</button>
-                    <button type="button" onclick="executeReportPrint('${jobUUID}', '${finalCustomer}')" class="btn-report-ctrl btn-print-row">🖨️ พิมพ์รายงาน</button>
-                </div>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12.5px;">
-                <div><b>เลขที่ใบงาน (Job No.):</b> <span style="color:#2b6cb0; font-weight:bold;">${jobUUID}</span></div>
-                <div><b>วันที่ออกรายงาน:</b> ${new Date().toLocaleDateString('th-TH')}</div>
-            </div>
-
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 12.5px; table-layout: fixed;">
-                <tr>
-                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #f7fafc; width: 25%;"><b>บริษัทลูกค้า</b></td>
-                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${finalCustomer}</td>
-                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #f7fafc; width: 20%;"><b>ประเภทงาน</b></td>
-                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${finalJobType}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>ชื่อชิ้นงาน / อุปกรณ์</b></td>
-                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${itemName}</td>
-                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #itemQty"><b>จำนวน</b></td>
-                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0;">${itemQty} รายการ</td>
-                </tr>
-                <tr>
-                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>โมเดล / ซีเรียล</b></td>
-                    <td colspan="3" style="padding: 6px 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">${itemModel}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #f7fafc; height: 60px; vertical-align: top;"><b>รายละเอียดอาการชำรุด</b></td>
-                    <td colspan="3" style="padding: 6px 8px; border: 1px solid #cbd5e0; vertical-align: top; word-wrap: break-word; white-space: pre-line;">${jobDesc}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 6px 8px; border: 1px solid #cbd5e0; background: #f7fafc;"><b>การตรวจสอบอะไหล่</b></td>
-                    <td colspan="3" style="padding: 6px 8px; border: 1px solid #cbd5e0; word-wrap: break-word;">
-                        สถานะ: <b>${partsStatus}</b> ${partsStatus === 'ไม่ครบ' ? `<br><span style="color:#dd6b20;">หมายเหตุรายการที่ขาด:</span> ${partsNotes}` : ''}
-                    </td>
-                </tr>
-            </table>
-
-            <div style="margin-bottom: 12px; page-break-inside: avoid;">
-                <h4 style="font-size: 13px; margin: 0 0 5px 0; color: #1a365d;">📋 ผลการตรวจสอบหน้างาน (Checklist)</h4>
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                    <thead>
-                        <tr style="background: #f7fafc;">
-                            <th style="border: 1px solid #cbd5e0; padding: 5px; text-align: center; width: 10%;">ลำดับ</th>
-                            <th style="border: 1px solid #cbd5e0; padding: 5px; text-align: left;">รายการตรวจสอบ</th>
-                            <th style="border: 1px solid #cbd5e0; padding: 5px; text-align: center; width: 25%;">ผลการตรวจสอบ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${typeof checklistRowsHTML !== 'undefined' ? checklistRowsHTML : '<tr><td colspan="3" style="text-align:center; padding:8px; color:#718096;">ไม่มีข้อมูลการตรวจสอบ</td></tr>'}
-                    </tbody>
-                </table>
-            </div>
-
-            <div style="margin-bottom: 15px; page-break-inside: avoid;">
-                <h4 style="font-size: 13px; margin: 0 0 6px 0; color: #1a365d;">📸 ภาพถ่ายจุดขัดข้องและการวิเคราะห์หน้างาน</h4>
-                <table style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                        <td style="width: 50%; padding-right: 5px; vertical-align: top;">
-                            <div style="border: 1px solid #cbd5e0; padding: 6px; border-radius: 4px; text-align: center; background: #fff;">
-                                <div style="height: 160px; background: #f7fafc; border-radius: 4px; text-align: center; line-height: 160px; overflow: hidden; margin-bottom: 4px;">
-                                    ${typeof jobPhotoUrl1 !== 'undefined' && jobPhotoUrl1 ? `<img src="${jobPhotoUrl1}" style="max-width: 100%; max-height: 100%; vertical-align: middle; object-fit: contain;">` : '<span style="color:#a0aec0; font-size:12px;">ไม่มีรูปถ่ายจุดขัดข้อง 1</span>'}
-                                </div>
-                                <p style="margin: 0; font-size: 11.5px; color: #4a5568;"><b>คำอธิบาย:</b> ${typeof photoDesc1 !== 'undefined' ? photoDesc1 : 'ภาพถ่ายจุดขัดข้อง 1'}</p>
-                            </div>
-                        </td>
-                        <td style="width: 50%; padding-left: 5px; vertical-align: top;">
-                            <div style="border: 1px solid #cbd5e0; padding: 6px; border-radius: 4px; text-align: center; background: #fff;">
-                                <div style="height: 160px; background: #f7fafc; border-radius: 4px; text-align: center; line-height: 160px; overflow: hidden; margin-bottom: 4px;">
-                                    ${typeof jobPhotoUrl2 !== 'undefined' && jobPhotoUrl2 ? `<img src="${jobPhotoUrl2}" style="max-width: 100%; max-height: 100%; vertical-align: middle; object-fit: contain;">` : '<span style="color:#a0aec0; font-size:12px;">ไม่มีรูปถ่ายจุดขัดข้อง 2</span>'}
-                                </div>
-                                <p style="margin: 0; font-size: 11.5px; color: #4a5568;"><b>คำอธิบาย:</b> ${typeof photoDesc2 !== 'undefined' ? photoDesc2 : 'ภาพถ่ายจุดขัดข้อง 2'}</p>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-
-            <table style="width: 100%; border-collapse: collapse; margin-top: 30px; font-size: 12.5px; page-break-inside: avoid; break-inside: avoid;">
-                <tr>
-                    <td style="width: 50%; text-align: center; vertical-align: bottom; padding: 5px;">
-                        <div style="height: 55px; line-height: 55px; text-align: center; margin-bottom: 5px;">
-                            ${customerSigImg ? 
-                                `<img src="${customerSigImg}" style="max-height: 55px; max-width: 90%; vertical-align: middle; object-fit: contain;">` : 
-                                '<div style="border-bottom: 1px solid #000; width: 80%; height: 45px; margin: 0 auto;"></div>'
-                            }
-                        </div>
-                        <p style="margin: 0;">( ลงชื่อ: <b>${printedCustomerName || '...........................................'}</b> )</p>
-                        <p style="margin: 3px 0 0 0; font-size: 11px; color: #718096;">ผู้ตรวจรับงาน / ลูกค้า</p>
-                    </td>
-                    
-                    <td style="width: 50%; text-align: center; vertical-align: bottom; padding: 5px;">
-                        <div style="height: 55px; line-height: 55px; text-align: center; margin-bottom: 5px;">
-                            ${techSigImg ? 
-                                `<img src="${techSigImg}" style="max-height: 55px; max-width: 90%; vertical-align: middle; object-fit: contain;">` : 
-                                '<div style="border-bottom: 1px solid #000; width: 80%; height: 45px; margin: 0 auto;"></div>'
-                            }
-                        </div>
-                        <p style="margin: 0;">( ลงชื่อ: <b>${printedTechName || '...........................................'}</b> )</p>
-                        <p style="margin: 3px 0 0 0; font-size: 11px; color: #718096;">ช่างผู้รับผิดชอบ (GRT Technician)</p>
-                    </td>
-                </tr>
-            </table>
-
-        </div>
-    `;
-    }
-}
-
-function closeViewDocModal() {
-    const modal = document.getElementById('viewDocModal');
-    if(modal) modal.style.display = 'none';
-
-}
-
-
-// ⚙️ ฟังก์ชันย่อยสำหรับปุ่มควบคุมต่าง ๆ ของหน้าใบงาน SERVICE REPORT
-// 1. ฟังก์ชันบันทึกรายงานเป็น PDF (เวอร์ชันแก้ไขบั๊กดาวน์โหลดซ้ำ - อัปเดตล่าสุด)
-function executeReportPDF(jobNum) {
-    const targetElement = document.getElementById('pdfActiveArea');
-    if(!targetElement) return alert("ไม่พบข้อมูลรายงานเพื่อแปลงไฟล์");
-    
-    // 1. ทำการโคลนและลบปุ่มควบคุมออกเหมือนเดิม
-    const pdfClone = targetElement.cloneNode(true);
-    const actionGroup = pdfClone.querySelector('.report-action-group');
-    if (actionGroup) {
-        actionGroup.remove();
-    }
-    
-    // 2. ตั้งค่าระยะขอบ
-    const options = {
-        margin:       [15, 10, 15, 10], 
-        filename:     `Service_Report_${jobNum}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2.5, useCORS: true, letterRendering: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    
-    // 3. เรียกใช้งาน html2pdf "เพียงรอบเดียวเท่านั้น" และดักจับ Error ที่ท้ายสุด
-    html2pdf().set(options).from(pdfClone).toPdf().get('pdf').then(function (pdf) {
-        // หาจำนวนหน้าทั้งหมดที่มีในใบงานชิ้นนี้
-        const totalPages = pdf.internal.getNumberOfPages();
-        
-        // วนลูปเพื่อปั๊มเลขหน้าลงไปทีละหน้า
-        for (let i = 1; i <= totalPages; i++) {
-            pdf.setPage(i); // เลือกหน้าปัจจุบัน
-            
-            pdf.setFontSize(7); // ตั้งค่าขนาดตัวอักษรเลขหน้า
-            pdf.setTextColor(100, 116, 139); // ใช้สีเทา Slate สวยๆ ให้เข้ากับ Theme
-            
-            // คำนวณพิกเซลความกว้างและความสูงของหน้ากระดาษ A4
-            const pageWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
-            
-            // เจาะจงพิกัดวาง: ขยับเข้ามาจากขอบขวา 25 มม. และสูงจากขอบล่าง 10 มม.
-
-
-            // จะแสดงผลเป็น: Page 1 of 2 (อยู่มุมขวาล่าง)
-            pdf.text(`Page ${i} of ${totalPages}`, pageWidth - 25, pageHeight - 10);
-
-        }
-        
-        // 🎯 สั่งบันทึกไฟล์ผ่าน Object ของ jsPDF โดยตรง
-        pdf.save(options.filename);
-        
-    }).catch(err => { 
-        // ⚠️ ย้ายคำสั่งแจ้งเตือนมาดักจับตรงนี้ หากกระบวนการข้างบนเกิดปัญหา
-        console.error("PDF Generation Error:", err);
-        alert("เกิดข้อผิดพลาดระหว่างเจเนอเรตไฟล์ PDF"); 
-    });
-    
-    // ❌ [ลบคำสั่งซ้ำซ้อนเดิมตรงนี้ออกทั้งหมดเรียบร้อยแล้ว]
-}
-
-
-
-        // 3. ฟังก์ชันสั่งพิมพ์เอกสารรายงานออกทางเครื่องพิมพ์
-        function executeReportPrint(jobUUID, customer) {
-            if (typeof printSingleJob === 'function') {
-                printSingleJob(jobUUID, customer);
-            } else {
-                window.print();
-            }
-        }
-
-
-        // ====================================================================
-        // 🛠️ ฟังก์ชันลบข้อมูลตาราง repair_jobs (Supabase)
-        // ====================================================================
-        async function deleteJobRow(jobId, jobNum) {
-            const isConfirm = confirm(`⚠️ คุณแน่ใจใช่ไหมที่จะลบ "ใบงานเลขที่: ${jobNum}" ?\n\nการลบนี้จะนำข้อมูลออกจากระบบ Supabase และไม่สามารถกู้คืนได้!`);
-            if (!isConfirm) return;
-
-            try {
-                let client = null;
-                if (typeof supabaseClient !== 'undefined' && supabaseClient && typeof supabaseClient.from === 'function') { client = supabaseClient; } 
-                else if (typeof supabase !== 'undefined' && supabase && typeof supabase.from === 'function') { client = supabase; } 
-                else if (window.supabaseClient && typeof window.supabaseClient.from === 'function') { client = window.supabaseClient; } 
-                else if (window.supabase && typeof window.supabase.from === 'function') { client = window.supabase; }
-
-                if (!client) {
-                    for (let key in window) {
-                        try {
-                            if (window[key] && typeof window[key] === 'object' && typeof window[key].from === 'function') {
-                                client = window[key];
-                                break;
-                            }
-                        } catch (e) { }
-                    }
-                }
-
-                if (!client || typeof client.from !== 'function') {
-                    throw new Error("ไม่พบตัวเชื่อมต่อฐานข้อมูลในระบบ");
-                }
-
-                const targetId = isNaN(jobId) ? jobId : Number(jobId);
-                const { error } = await client.from('repair_jobs').delete().eq('id', targetId);
-                if (error) throw error;
-
-                if (typeof localCachedJobs !== 'undefined' && Array.isArray(localCachedJobs)) {
-                    localCachedJobs = localCachedJobs.filter(j => j.id != jobId);
-                }
-
-                alert(`🎉 ลบใบงานเลขที่ ${jobNum} เรียบร้อยแล้วครับ`);
-
-                if (typeof renderTable === 'function') {
-                    if (typeof localCachedJobs !== 'undefined') { renderTable(localCachedJobs); } 
-                    else if (typeof loadHistoryData === 'function') { loadHistoryData(); } 
-                    else { window.location.reload(); }
-                } else {
-                    window.location.reload(); 
-                }
-            } catch (err) {
-                console.error("Delete Action Error:", err);
-                alert(`❌ ไม่สามารถทำการลบข้อมูลได้เนื่องจาก: ${err.message}`);
-            }
-        }
-    </script>
-
-<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-
-<script src="app.js"></script>
-
+</div>
+<script src="dashboard.js"></script>
 </body>
 </html>

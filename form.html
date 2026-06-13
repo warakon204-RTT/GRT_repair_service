@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRT SERVICE REPORT FORM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+<div class="app-container"> 
+    <header style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid rgba(15, 23, 42, 0.08); padding-bottom: 25px;">
+        <div>
+            <h2>🛠️ GRT SERVICE REPORT FORM</h2>
+            <p style="font-weight: 600; color: var(--accent-color); margin-top: 5px;">บริษัท กราฟฟิก อาร์ที ดีไซนส์ จำกัด (GRAPHIC RT DESIGNS CO., LTD.)</p>
+        </div>
+        
+        <div style="display: flex; gap: 10px;" class="no-print">
+            <button type="button" onclick="refreshForm()" class="btn" style="background: #64748b; color: white; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(100, 116, 139, 0.15); cursor: pointer;">
+                🔄 รีเฟรชฟอร์ม
+            </button>
+            <a href="index.html" class="btn btn-primary" style="background: var(--accent-color); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);">
+                📊 กลับหน้าแดชบอร์ด
+            </a>
+        </div>
+    </header>
+
+    <form id="repairServiceForm" onsubmit="return false;" style="display: flex; flex-direction: column; gap: 25px;">
+        
+        <fieldset>
+            <legend>📌 ข้อมูลหลักใบงาน</legend>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; width: 100%;">
+                <div class="form-group" style="margin: 0;">
+                    <label>เลขที่ใบงาน (Job Number)</label>
+                    <input type="text" id="jobUUID" value="JOB-2026-0001">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label>บริษัทลูกค้า</label>
+                    <select id="customerSelect">
+                        <option value="">-- กรุณาเลือกลูกค้า --</option>
+                        <option value="GRAPHIC RT DESIGNS CO., LTD">GRAPHIC RT DESIGNS CO., LTD</option>
+                        <option value="CAC">CAC</option>
+                        <option value="CBI">CBI</option>
+                        <option value="OTHER">อื่นๆ (ระบุเอง)</option>
+                    </select>
+                    <input type="text" id="customerNameOther" class="hidden-input" placeholder="ระบุชื่อบริษัทลูกค้า...">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label>ประเภทงาน</label>
+                    <select id="jobTypeSelect">
+                        <option value="">-- กรุณาเลือกประเภทงาน --</option>
+                        <option value="ขัดใหม่">ขัดใหม่</option>
+                        <option value="3D SCANNING">3D SCANNING</option>
+                        <option value="ซ่อม">ลูกค้าส่งซ่อม</option>
+                        <option value="MODIFY">ลูกค้าแก้ไข</option>
+                        <option value="NEW PART">ลูกค้าสั่งใหม่</option>
+                        <option value="เคลม">เคลม</option>
+                        <option value="OTHER">อื่นๆ</option>
+                    </select>
+                    <input type="text" id="jobTypeOther" class="hidden-input" placeholder="ระบุประเภทงานอื่นๆ...">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>⚙️ รายละเอียดงาน</legend>
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; width: 100%; flex-wrap: wrap;">
+                <div class="form-group" style="margin: 0;"><label>ชื่อชิ้นงาน / ชื่ออุปกรณ์</label><input type="text" id="addItemName" placeholder="เช่น แม่พิมพ์ Mold A1"></div>
+                <div class="form-group" style="margin: 0;"><label>รุ่น / โมเดล / ซีเรียล</label><input type="text" id="addItemModel" placeholder="รุ่น/โมเดล"></div>
+                <div class="form-group" style="margin: 0;"><label>จำนวน (Qty)</label><input type="number" id="addItemQty" value="1" min="1"></div>
+            </div>
+            <div class="form-group" style="margin: 0; width: 100%;">
+                <label>รายละเอียดเพิ่มเติม</label>
+                <textarea id="addJobDescription" rows="3" placeholder="รายละเอียดอาการขัดข้องหน้างานอย่างละเอียด..."></textarea>
+            </div>
+        </fieldset>
+
+        <section style="background: rgba(254, 243, 199, 0.4); border: 1px solid rgba(252, 211, 77, 0.3);">
+            <h3 style="color: #b45309;"><span style="background: #b45309; width: 4px; height: 16px; display: inline-block; border-radius: 4px;"></span>📦 การตรวจสอบชิ้นส่วนและอะไหล่</h3>
+            <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-top: 5px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-main); font-size: 15px;">
+                    <input type="radio" name="partsStatus" value="ครบถ้วน" style="accent-color: var(--accent-color); width: 18px; height: 18px;"> อุปกรณ์และอะไหล่ครบถ้วน
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-main); font-size: 15px;">
+                    <input type="radio" name="partsStatus" value="ไม่ครบ" style="accent-color: var(--accent-color); width: 18px; height: 18px;"> พบชิ้นส่วนอะไหล่ขาด/ไม่ครบถ้วน
+                </label>
+            </div>
+            <div id="missingPartsContainer" class="hidden-input" style="flex-direction: column; gap: 10px; width: 100%;">
+                <div id="partsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                <button type="button" class="btn btn-success" id="btnAddPart" style="font-size: 12px; height: 32px; align-self: flex-start; background: #d97706; cursor: pointer;">➕ ระบุรายการอะไหล่ขาดเพิ่ม</button>
+                <div class="form-group" style="margin: 0; margin-top: 8px;"><label>หมายเหตุอะไหล่เพิ่มเติม</label><input type="text" id="partsNotes" placeholder="หมายเหตุอะไหล่เพิ่มเติม..."></div>
+            </div>
+        </section>
+
+        <section style="background: rgba(255, 255, 255, 0.4);">
+            <h3>📸 รูปภาพและมาร์กตำแหน่ง</h3>
+            <div id="photosContainer" style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="photo-block" id="photoBlock_1" style="background: rgba(255, 255, 255, 0.6); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <input type="file" class="camera-input" accept="image/*" onchange="handleImageUpload(this, 'markupCanvas_1')" style="height: auto; border: none; padding: 0; background: transparent;">
+                    <div class="canvas-wrapper" style="margin-top: 12px;"><canvas id="markupCanvas_1" width="500" height="350"></canvas></div>
+                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 10px; flex-wrap: wrap;">
+                        <input type="text" class="photo-desc-input" placeholder="คำอธิบายภาพถ่ายใบนี้ เช่น จุดแตกหักบริเวณมุมขวา" style="flex: 1;">
+                        <button type="button" class="btn-danger-sm" onclick="clearCanvasContent('markupCanvas_1')" style="cursor: pointer;">ล้างรอยวาด</button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="btnAddPhotoBlock" style="background: var(--accent-color); align-self: flex-start; cursor: pointer;">➕ เพิ่มกล่องรูปภาพใหม่</button>
+        </section>
+
+        <section style="background: rgba(15, 23, 42, 0.03); border: 1px solid rgba(15, 23, 42, 0.05);">
+            <div style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; display: grid;">
+                <div class="form-group" style="margin: 0;">
+                    <label>ชื่อตัวแทนลูกค้า (Customer Representative)</label>
+                    <input type="text" id="printedCustomerName" placeholder="ชื่อ-นามสกุลลูกค้า">
+                    <div class="canvas-wrapper" style="margin-top: 8px;"><canvas id="customerSigCanvas" width="400" height="150"></canvas></div>
+                    <button type="button" id="btnClearCustSig" class="btn-danger-sm" style="align-self: flex-start; margin-top: 5px; cursor: pointer;">ล้างช่องเซ็น</button>
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label>ชื่อช่างเทคนิคผู้บันทึก (GRT Technician)</label>
+                    <input type="text" id="printedTechName" placeholder="ชื่อช่างผู้ปฏิบัติงาน">
+                    <div class="canvas-wrapper" style="margin-top: 8px;"><canvas id="techSigCanvas" width="400" height="150"></canvas></div>
+                    <button type="button" id="btnClearTechSig" class="btn-danger-sm" style="align-self: flex-start; margin-top: 5px; cursor: pointer;">ล้างช่องเซ็น</button>
+                </div>
+            </div>
+        </section>
+
+        <button type="button" class="btn btn-success" id="btnSubmitJob" style="font-size: 16px; height: 54px; width: 100%; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25); cursor: pointer;">
+            🚀 บันทึกข้อมูล
+        </button>
+    </form>
+</div>
+
+<script src="form.js"></script>
+</body>
+</html>

@@ -15,7 +15,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -36,9 +36,9 @@ body {
 }
 
 /* บล็อกครอบสไตล์กระจกหรูหรา (Modern Glassmorphism) */
-.app-container {
+.container, .app-container {
     width: 100%;
-    max-width: 700px;
+    max-width: 1100px;
     background: rgba(255, 255, 255, 0.85); /* ขาวโปร่งแสงเพื่อให้เห็นพื้นหลังลางๆ */
     backdrop-filter: blur(16px);           /* สั่งเบลอพื้นหลังเพิ่มความหรูหรา */
     -webkit-backdrop-filter: blur(16px);
@@ -57,43 +57,26 @@ body {
 header {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    text-align: center;
+    gap: 10px;
     border-bottom: 1px solid rgba(15, 23, 42, 0.08);
     padding-bottom: 25px;
 }
 
-/* โลโก้บริษัท */
-.brand-logo {
-    width: 90px;
-    height: 90px;
-    object-fit: cover;
-    border-radius: 18px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
-    border: 2px solid #ffffff;
-}
-
-header h2 {
-    font-size: 22px;
+header h1, header h2 {
+    font-size: 24px;
     font-weight: 800;
     letter-spacing: -0.5px;
     color: var(--primary-color);
 }
 
-.form-grid {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 10px;
+header p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0;
 }
 
-@media (max-width: 480px) {
-    .form-grid { grid-template-columns: 1fr; } /* ยุบเหลือแถวเดียวบนมือถือ */
-}
-
-.form-group-block {
+.form-group {
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -108,7 +91,7 @@ label {
 }
 
 /* ปรับฟิลด์กรอกข้อมูลให้มีความโค้งมนและสะอาดตา */
-input[type="text"], select {
+input[type="text"], input[type="number"], input[type="date"], select, textarea {
     width: 100%;
     height: 46px;
     padding: 0 16px;
@@ -121,14 +104,19 @@ input[type="text"], select {
     transition: all 0.2s ease;
 }
 
-input[type="text"]:focus, select:focus {
+textarea {
+    height: auto;
+    padding: 12px 16px;
+}
+
+input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
     border-color: var(--accent-color);
     background: #ffffff;
     box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
 }
 
 .hidden-input {
-    display: none;
+    display: none !important;
     margin-top: 8px;
     animation: fadeIn 0.3s ease;
 }
@@ -136,14 +124,21 @@ input[type="text"]:focus, select:focus {
 /* ==========================================
    CARD SECTIONS (ส่วนงานย่อย)
    ========================================== */
-section {
+fieldset, section {
     background: rgba(255, 255, 255, 0.7);
-    padding: 20px;
+    padding: 25px;
     border-radius: 16px;
-    border: 1px solid rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(15, 23, 42, 0.06);
     display: flex;
     flex-direction: column;
     gap: 15px;
+}
+
+legend {
+    font-weight: 800;
+    color: var(--primary-color);
+    padding: 0 10px;
+    font-size: 15px;
 }
 
 h3 {
@@ -164,48 +159,17 @@ h3::before {
     border-radius: 4px;
 }
 
-/* สไตล์ส่วนตรวจสอบอะไหล่ */
-.parts-section {
-    background: rgba(254, 243, 199, 0.5); /* ส้มอ่อนโปร่งแสง */
-    border: 1px solid rgba(252, 211, 77, 0.4);
-}
-
-.radio-group {
-    display: flex;
-    gap: 24px;
-}
-
-.radio-group label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    color: var(--text-main);
-    font-size: 15px;
-}
-
-.radio-group input[type="radio"] {
-    accent-color: var(--accent-color); /* เปลี่ยนสีวงกลมวิทยุเป็นสีฟ้า */
-    width: 18px;
-    height: 18px;
-}
-
 /* สไตล์แถวเช็กลิสต์ */
-.checklist-row, .part-row {
+.checklist-row {
     display: flex;
     gap: 12px;
     align-items: center;
     animation: fadeIn 0.2s ease;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
 }
-
-.checklist-row span, .part-row span {
-    font-weight: 700;
-    color: var(--text-muted);
-    font-size: 14px;
-}
-
-.checklist-row input { flex: 1; height: 42px; }
-.checklist-row select { width: auto; height: 42px; min-width: 110px; }
 
 /* ==========================================
    CANVAS DRAWING & SIGNATURES
@@ -219,42 +183,21 @@ h3::before {
     overflow: hidden;
     border: 1px solid var(--border-color);
     box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 10px;
 }
 
 canvas {
     background: #ffffff;
     border-radius: 12px;
-    border: 1px solid var(--border-color);
     max-width: 100%;
-}
-
-.sig-flex {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-@media (max-width: 480px) {
-    .sig-flex { grid-template-columns: 1fr; }
-}
-
-.sig-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-}
-
-.sig-box p {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text-muted);
+    cursor: crosshair;
+    touch-action: none;
 }
 
 /* ==========================================
    PREMIUM BUTTONS
    ========================================== */
-button {
+button, .btn {
     height: 44px;
     font-size: 14px;
     font-weight: 700;
@@ -265,44 +208,21 @@ button {
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
+    padding: 0 20px;
 }
 
-.btn-secondary {
-    background: #ffffff;
-    color: var(--primary-color);
-    border: 1px solid var(--border-color);
-    width: 100%;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+.btn-primary {
+    background: var(--accent-color);
+    color: white;
 }
 
-.btn-secondary:hover {
-    background: var(--primary-color);
-    color: #ffffff;
-    border-color: var(--primary-color);
-}
-
-.btn-danger-sm {
-    background: rgba(244, 63, 94, 0.1);
-    color: var(--danger-color);
-    padding: 0 14px;
-    height: 32px;
-    font-size: 12px;
-}
-
-.btn-danger-sm:hover { background: var(--danger-color); color: white; }
-
-footer {
-    margin-top: 10px;
-    border-top: 1px solid rgba(15, 23, 42, 0.08);
-    padding-top: 25px;
+.btn-primary:hover {
+    background: #0369a1;
 }
 
 .btn-success {
-    background: var(--primary-color); /* เปลี่ยนปุ่มส่งเป็นสีองค์กรเข้มขรึม */
+    background: var(--primary-color); /* สีองค์กรเข้มขรึมตามระบบเดิมคุณ */
     color: white;
-    width: 100%;
-    height: 52px;
-    font-size: 16px;
     box-shadow: 0 10px 25px rgba(15, 23, 42, 0.2);
 }
 
@@ -312,110 +232,112 @@ footer {
     box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
 }
 
+.btn-danger-sm {
+    background: rgba(244, 63, 94, 0.1);
+    color: var(--danger-color);
+    padding: 0 14px;
+    height: 32px;
+    font-size: 12px;
+    border-radius: 8px;
+}
+
+.btn-danger-sm:hover { background: var(--danger-color); color: white; }
 button:active { transform: translateY(1px); }
+
+/* ==========================================
+   TABLE & DASHBOARD RESPONSIVE FIXES
+   ========================================== */
+.table-responsive { width: 100%; overflow-x: auto; margin-top: 10px; }
+
+.industrial-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.industrial-table th {
+    background: rgba(15, 23, 42, 0.05);
+    padding: 12px;
+    text-align: left;
+    font-size: 13px;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.industrial-table td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    font-size: 13px;
+}
+
+.industrial-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+/* OVERLAY POPUPS MODAL */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 24px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.btn-view-doc { background-color: #4c51bf; } /* สีม่วงสวยงามสำหรับปุ่มเปิดดูเอกสาร */
-
-/* ==========================================
-   TABLE & DASHBOARD RESPONSIVE FIXES
-   ========================================== */
-#historyTable {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin-top: 10px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-#historyTable th {
-    background: rgba(15, 23, 42, 0.05);
-    padding: 12px;
-    text-align: left;
-    font-size: 13px;
-    color: var(--primary-color);
-}
-
-#historyTable td {
-    padding: 12px;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-    font-size: 13px;
-}
-
-.action-btn {
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin: 2px;
-}
-
-.btn-view-doc { background: #3b82f6; color: white; }
-.btn-view-doc:hover { background: #2563eb; }
-
-.btn-edit { background: #e2e8f0; color: #475569; }
-.btn-edit:hover { background: #cbd5e1; }
-
-@media (max-width: 600px) {
-    #historyTable { font-size: 11px; }
-    #historyTable td { padding: 8px 4px; }
-    .action-btn { padding: 8px; width: 100%; }
-}
-
 /* ====================================================================
-   🖥️ FORCE REMOVE BORDER ON SCREEN (ลบกรอบแผงใบงานบนจอภาพปกติ)
-   ==================================================================== */
-#pdfActiveArea, 
-#pdfActiveArea.card, 
-#pdfActiveArea.border, 
-#pdfActiveArea.shadow {
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    padding: 0 !important;
-}
-
-/* ====================================================================
-   🚫 PRINT & PDF GENERATION OPTIMIZATION (เวอร์ชันแก้ไขเนื้อหาและรูปขาดหาย)
+   🚫 PRINT & PDF GENERATION OPTIMIZATION (เวอร์ชันแก้ไขสารบัญและรูปขาดหาย)
    ==================================================================== */
 @media print {
-    /* 1. สั่งซ่อนชุดปุ่มควบคุมทั้งหมด ไม่ให้หลุดเข้าไปใน PDF */
-    .report-action-group, 
-    .tab-navigation, 
-    .filter-bar, 
-    footer, 
-    button, 
-    .action-btn,
-    .btn-secondary,
-    .btn-success,
-    .btn-clear-sig {
+    .no-print, .btn, button, footer, .modal-overlay button, .btn-danger-sm, select, input[type="date"] {
         display: none !important;
     }
 
-    /* 2. ปลดล็อกระบบ Flexbox และความสูงของ Body เพื่อให้เนื้อหาไหลลงหน้า 2 ได้สมบูรณ์ */
     body {
         background-image: none !important;
         background: #ffffff !important;
         color: #000000 !important;
         padding: 0 !important;
-        display: block !important;        /* เปลี่ยนจาก flex เป็น block */
-        height: auto !important;          /* ปลดล็อกให้ความสูงขยายตามเนื้อหาจริง */
-        min-height: auto !important;      /* ล้างค่า 100vh ของหน้าจอปกติออก */
-        overflow: visible !important;     /* เปิดให้เนื้อหาล้นลงหน้าถัดไปได้ */
+        display: block !important;       
+        height: auto !important;          
+        min-height: auto !important;      
+        overflow: visible !important;     
     }
 
-    /* 3. สั่งขยายกล่อง Modal ให้เต็มหน้ากระดาษพิมพ์ */
-    .modal {
+    .container, .app-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: transparent !important;
+    }
+
+    .modal-overlay {
         position: absolute !important;
         left: 0 !important;
         top: 0 !important;
@@ -424,6 +346,7 @@ button:active { transform: translateY(1px); }
         background: #ffffff !important;
         display: block !important;
         z-index: auto !important;
+        backdrop-filter: none !important;
     }
 
     .modal-content {
@@ -437,24 +360,64 @@ button:active { transform: translateY(1px); }
         display: block !important;
     }
 
-    /* 4. เคลียร์พื้นที่ขอบของใบงานหลัก เพื่อให้พิมพ์ได้เต็มแผ่น A4พอดี */
-    #pdfActiveArea {
+    input[type="text"], input[type="number"], textarea {
         border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
+        background: transparent !important;
         padding: 0 !important;
-        background: #ffffff !important; 
-        height: auto !important;
-        overflow: visible !important;
+        outline: none !important;
     }
 
-    /* 5. ป้องกันกล่องเช็กลิสต์, ตาราง, บล็อกรูปถ่าย หรือลายเซ็นโดนตัดขาดครึ่งตรงรอยต่อกระดาษ */
-    .signature-section, 
-    .sig-block-form, 
-    .sig-flex,
-    .checklist-row,
-    table, tr, img {
-        page-break-inside: avoid !important; /* หากพื้นที่หน้าแรกไม่พอพิมพ์ ให้ยกทั้งบล็อกไปเริ่มหน้า 2 */
+    .canvas-wrapper {
+        border: 1px solid #cbd5e1 !important;
+        background: #ffffff !important;
+    }
+
+    @page {
+        size: A4 portrait;
+        margin: 15mm;
+    }
+
+    fieldset, section, .checklist-row, tr, img, .photo-block {
+        page-break-inside: avoid !important;
         break-inside: avoid !important;
     }
+}
+
+/* ขยับก้อนลายเซ็นทั้งหมดขึ้นไปหาเนื้อหาด้านบน */
+.signature-zone {
+    display: flex;
+    justify-content: space-between;
+    margin-top: -80px !important; /* ปรับเลขนี้ให้ติดลบมากขึ้นเพื่อขยับขึ้นอีก */
+    width: 100%;
+}
+
+.sig-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 45%;
+}
+
+/* ปรับความสูงเส้นลายเซ็นเพื่อลดช่องว่างแนวตั้ง */
+.sig-line {
+    width: 100%;
+    height: 60px; /* ปรับลดลงให้ชื่อขยับขึ้นมา */
+    border-bottom: 1px dashed #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+
+.sig-label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.sig-name {
+    font-size: 13px;
+    color: #000000; /* ให้สีชื่อเข้มขึ้นเพื่อให้ชัดเจน */
+    margin-top: 2px !important;
+    text-align: center;
 }
