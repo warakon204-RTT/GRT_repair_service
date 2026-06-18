@@ -6,7 +6,6 @@
     <title>รายงานการซ่อมบำรุงและประเมินวิศวกรรม - GRT</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
@@ -16,14 +15,15 @@
             --border: #cbd5e1;
         }
         * { box-sizing: border-box; font-family: 'Sarabun', sans-serif; }
-        body { background: #f8fafc; color: var(--text-dark); margin: 0; padding: 20px; }
+        body { background: #f8fafc; color: var(--text-dark); margin: 0; padding: 15px; }
 
-        /* แผ่นกระดาษจำลองสไตล์รายงานวิศวกรรม */
+        /* ✨ ปรับกล่องกระดาษจำลองให้ขยายพอดีหน้าจอขนาดเล็ก และจำกัดขนาดบนหน้าจอใหญ่ */
         .print-page {
             background: #fff;
+            width: 100%;
             max-width: 850px;
             margin: 0 auto;
-            padding: 40px;
+            padding: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
             border: 1px solid var(--border);
@@ -63,45 +63,106 @@
         }
         .btn-close:hover { background: #475569; }
 
-        /* การจัดบล็อกข้อมูลส่วนหัวกระดาษ */
-        .doc-header { display: flex; justify-content: space-between; border-bottom: 3px double var(--primary); padding-bottom: 15px; margin-bottom: 25px; }
-        .doc-title h2 { margin: 0; color: var(--primary); font-size: 24px; }
-        .doc-title p { margin: 5px 0 0 0; color: #64748b; font-size: 14px; }
-        .job-tag { background: #f1f5f9; padding: 10px 15px; border-radius: 6px; border: 1px solid var(--border); text-align: right; }
+        /* ✨ ปรับส่วนหัวให้รองรับการสลับแถวเมื่อเปิดบนอุปกรณ์หน้าจอแคบ */
+        .doc-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 3px double var(--primary); 
+            padding-bottom: 15px; 
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .header-logo-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            min-width: 280px;
+        }
+        .doc-title h2 { margin: 0; color: var(--primary); font-size: 22px; line-height: 1.2; }
+        .doc-title p { margin: 5px 0 0 0; color: #64748b; font-size: 13px; }
+        
+        /* ✨ แท็กเลขที่ใบงานปรับยืดหยุ่นตามความกว้างหน้าจออัตโนมัติ */
+        .job-tag { 
+            background: #f1f5f9; 
+            padding: 10px 15px; 
+            border-radius: 6px; 
+            border: 1px solid var(--border); 
+            text-align: right;
+            min-width: 180px;
+        }
 
-        /* ตารางข้อมูล Metadata ซ่อมบำรุง */
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
-        .info-item { font-size: 15px; }
+        /* ✨ ข้อมูลระบบ Metadata เปลี่ยนเป็นแบบสลับแถวอัตโนมัติเมื่อจอเล็ก */
+        .info-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+            gap: 12px; 
+            margin-bottom: 25px; 
+            background: #f8fafc; 
+            padding: 15px; 
+            border-radius: 6px; 
+            border: 1px solid #e2e8f0; 
+        }
+        .info-item { font-size: 14px; word-break: break-word; }
         .info-item strong { color: #334155; }
 
         /* หัวข้อเซกชันรายงาน */
-        .section-title { font-size: 16px; font-weight: bold; color: var(--primary); border-left: 4px solid var(--primary); padding-left: 10px; margin: 25px 0 12px 0; }
+        .section-title { font-size: 15px; font-weight: bold; color: var(--primary); border-left: 4px solid var(--primary); padding-left: 10px; margin: 25px 0 12px 0; }
 
-        /* ตารางข้อมูล Checklist แบบลีน */
-        .report-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+        /* ✨ ปรับระบบตารางให้มีสโครลแนวนอนเฉพาะบนมือถือเพื่อไม่ให้โครงสร้างหลักพัง */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+        .report-table { width: 100%; border-collapse: collapse; min-width: 600px; }
         .report-table th, .report-table td { border: 1px solid var(--border); padding: 10px 12px; font-size: 14px; text-align: left; }
         .report-table th { background: #f1f5f9; color: #334155; font-weight: 600; }
-        .report-table td:nth-child(1) { width: 50px; text-align: center; }
-        .report-table td:nth-child(3) { width: 150px; font-weight: bold; }
+        
+        /* กำหนดสัดส่วนความกว้างของคอลลัมน์ตาราง */
+        .report-table th:nth-child(1), .report-table td:nth-child(1) { width: 60px; text-align: center; }
+        .report-table th:nth-child(3), .report-table td:nth-child(3) { width: 130px; text-align: center; }
+        .report-table th:nth-child(4), .report-table td:nth-child(4) { width: 220px; }
 
-        /* โครงสร้างกล่องแสดงภาพถ่ายประกอบจุดบกพร่อง */
-        .photo-grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        /* ✨ รูปภาพประกอบปรับเป็น Grid 1 คอลัมน์บนมือถือ และ 2 คอลัมน์บนจอคอม */
+        .photo-grid-layout { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 15px; 
+            margin-bottom: 30px; 
+        }
         .photo-card { border: 1px solid var(--border); padding: 10px; border-radius: 6px; background: #fff; text-align: center; }
-        .photo-card img { max-width: 100%; height: auto; max-height: 250px; object-fit: contain; border-radius: 4px; }
+        .photo-card img { width: 100%; height: auto; max-height: 250px; object-fit: contain; border-radius: 4px; }
         .photo-caption { margin: 8px 0 0 0; font-size: 13px; color: #475569; font-weight: 600; }
 
-        /* ระนาบลงลายเซ็นคู่ท้ายแผ่นงาน */
-        .signature-zone { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 50px; text-align: center; }
-        .sig-box { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
-        .sig-line { width: 80%; border-bottom: 1px dashed #94a3b8; margin-top: 10px; margin-bottom: 5px; height: 60px; display: flex; align-items: center; justify-content: center; }
-        .sig-line img { max-height: 55px; object-fit: contain; }
+        /* ✨ โซนลายเซ็นท้ายเอกสาร ปรับยืดหยุ่นไม่ให้หลุดขอบหน้าจอ */
+        .signature-zone { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 25px; 
+            margin-top: 40px; 
+            text-align: center; 
+        }
+        .sig-box { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; background: #fafafa; padding: 15px; border-radius: 6px; border: 1px dashed #cbd5e1; }
+        .sig-line { width: 100%; max-width: 250px; border-bottom: 1px dashed #94a3b8; margin-top: 5px; margin-bottom: 8px; height: 60px; display: flex; align-items: center; justify-content: center; }
+        .sig-line img { max-height: 55px; max-width: 100%; object-fit: contain; }
+        .sig-label { font-size: 13px; font-weight: 600; color: #475569; }
+        .sig-name { font-size: 13px; color: #1e3a8a; font-weight: bold; margin-top: 2px; }
 
-        /* 🖨️ ชุดคำสั่งควบคุมชั้นเลเยอร์ป้องกันเอฟเฟกต์เพี้ยนเวลาพิมพ์ลงกระดาษ (Print Media) */
+        /* 🖨️ ชุดคำสั่งควบคุมชั้นเลเยอร์เวลาพิมพ์ลงกระดาษ (Print Media) */
         @media print {
             body { background: #fff; padding: 0; }
             .print-page { border: none; box-shadow: none; padding: 0; max-width: 100%; }
             .no-print-zone { display: none !important; }
-            .info-grid { background: transparent; }
+            .info-grid { background: transparent; display: grid !important; grid-template-columns: 1fr 1fr !important; }
+            .photo-grid-layout { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+            .signature-zone { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 40px; }
+            .sig-box { background: transparent; border: none; padding: 0; }
             .report-table th { background: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
@@ -109,36 +170,28 @@
 <body>
 
     <div class="no-print-zone">
-        <a href="index.html" class="btn-close">
-            ⬅️ กลับหน้าหลัก Dashboard
-        </a>
-        
-        <button type="button" class="btn-delete" onclick="deleteJobData()">
-            🗑️ ลบใบงานนี้
-        </button>
-
-        <button type="button" class="btn-print" onclick="window.print()">
-            🖨️ กดพิมพ์ใบงาน / บันทึกเป็น PDF
-        </button>
+        <a href="index.html" class="btn-close">⬅️ กลับหน้าหลัก Dashboard</a>
+        <button type="button" class="btn-delete" onclick="deleteJobData()">🗑️ ลบใบงานนี้</button>
+        <button type="button" class="btn-print" onclick="window.print()">🖨️ กดพิมพ์ใบงาน / บันทึกเป็น PDF</button>
     </div>
 
     <div class="print-page">
         
         <div class="doc-header">
-            <div class="doc-logo" style="margin-right: 15px;">
-                <img src="LGRT11.jpg" alt="Logo" style="width: 100px; height: auto; border-radius: 4px;">
+            <div class="header-logo-title">
+                <div class="doc-logo">
+                    <img src="LGRT11.jpg" alt="Logo" style="width: 85px; height: auto; border-radius: 4px; display: block;">
+                </div>
+                <div class="doc-title">
+                    <h2>GRT SERVICE REPORT</h2>
+                    <p>บริษัท กราฟฟิค อาร์ที ดีไซน์ จำกัด (GRAPHIC RT DESIGNS CO., LTD.)</p>
+                    <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;">
+                        1/2 Moo 3 T.Samnakbok A.Muang Chonburi ,Chonburi 20000 Thailand
+                    </p>
+                </div>
             </div>
-
-            <div class="doc-title">
-                <h2>GRT SERVICE REPORT</h2>
-                <p>บริษัท กราฟฟิก อาร์ที ดีไซน์ จำกัด (GRAPHIC RT DESIGNS CO., LTD.)</p>
-                <p style="margin: 2px 0 0 0; font-size: 13px; color: #64748b;">
-                    1/2 Moo 3 T.Samnakbok A.Muang Chonburi ,Chonburi 20000 Thailand
-                </p>
-            </div>
-
             <div class="job-tag">
-                <div style="font-size: 13px; color:#64748b;">เลขที่ใบงาน (Job Number)</div>
+                <div style="font-size: 12px; color:#64748b;">เลขที่ใบงาน (Job Number)</div>
                 <div id="lblJobNumber" style="font-weight: bold; color: var(--primary); font-size: 16px;">⏳ โหลดข้อมูล...</div>
             </div>
         </div>
@@ -151,28 +204,29 @@
         </div>
 
         <div class="section-title">📦 รายละเอียดอุปกรณ์และชิ้นส่วนวิเคราะห์</div>
-        <div class="info-grid" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 20px;">
+        <div class="info-grid" style="margin-bottom: 15px;">
             <div class="info-item"><strong>ชื่อรายการ/โมลด์:</strong> <span id="lblItemName">-</span></div>
             <div class="info-item"><strong>รุ่น/โมเดล:</strong> <span id="lblModel">-</span></div>
             <div class="info-item"><strong>จำนวน:</strong> <span id="lblQty">-</span> ชิ้น</div>
         </div>
-        <div style="padding: 0 15px 20px 15px; font-size: 14px; border-bottom: 1px solid #e2e8f0;">
+        <div style="padding: 0 5px 20px 5px; font-size: 14px; border-bottom: 1px solid #e2e8f0; line-height: 1.5; word-break: break-word;">
             <strong>รายละเอียดอาการชำรุด/ขัดข้อง:</strong> <span id="lblDescription">-</span>
         </div>
 
         <div class="section-title">📋 รายการประเมินวิศวกรรมและตรวจสอบหน้างาน</div>
-        <table class="report-table">
-            <thead>
-                <tr>
-                    <th>ลำดับ</th>
-                    <th>หัวข้อการตรวจเช็กระบบ / รายการอะไหล่</th>
-                    <th>สถานะประเมิน</th>
-                </tr>
-            </thead>
-            <tbody id="previewChecklistContainer">
-                <tr><td colspan="3" style="text-align:center; color:#94a3b8;">กำลังดึงตาราง Checklist...</td></tr>
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: center;">ลำดับ</th>
+                        <th>หัวข้อการตรวจเช็กระบบ / รายการอะไหล่</th>
+                        <th style="text-align: center;">สถานะประเมิน</th>
+                        <th>หมายเหตุ (Remarks)</th> </tr>
+                </thead>
+                <tbody id="previewChecklistContainer">
+                    <tr><td colspan="4" style="text-align:center; color:#94a3b8;">กำลังดึงตาราง Checklist...</td></tr> </tbody>
+            </table>
+        </div>
 
         <div class="section-title">📸 รูปภาพประกอบการวิเคราะห์จุดชำรุดขัดข้อง</div>
         <div class="photo-grid-layout" id="previewPhotosBlock"></div>
@@ -191,6 +245,7 @@
             </div>
         </div>
         
-    </div> <script src="preview.js"></script>
+    </div> 
+    <script src="preview.js"></script>
 </body>
 </html>
