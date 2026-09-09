@@ -70,7 +70,7 @@ function renderTable(list, isInitialToday = false) {
     const tbody = document.getElementById('historyTableBody'); if(!tbody) return;
     
     let totalJobsCount = 0;
-    let uniqueCustomersCount = 0;
+    let activeJobsCount = 0;
 
     // ⚙️ ตรรกะการคำนวณยอดนับในกล่องสถิติ
     if (isInitialToday) {
@@ -82,16 +82,16 @@ function renderTable(list, isInitialToday = false) {
             return new Date(rawDate).toISOString().split('T')[0] === todayStr;
         });
         totalJobsCount = todayJobs.length;
-        uniqueCustomersCount = [...new Set(todayJobs.map(j => j.customer_name).filter(n => n))].length;
+        activeJobsCount = localCachedJobs.filter(job => job.job_status !== 'ส่งกลับลูกค้าแล้ว').length;
     } else {
         // กรณีที่ผู้ใช้กำลังใช้งานฟิลเตอร์ (ค้นหา): ให้กล่องสถิตินับจำนวนตามผลลัพธ์ที่ฟิลเตอร์จริง
         totalJobsCount = list ? list.length : 0;
-        uniqueCustomersCount = list ? [...new Set(list.map(j => j.customer_name).filter(n => n))].length : 0;
+        activeJobsCount = list ? list.filter(job => job.job_status !== 'ส่งกลับลูกค้าแล้ว').length : 0;
     }
     
     // อัปเดตตัวเลขลงกล่องสถิติบนหน้าจอ
     if(document.getElementById('counterTotalJobs')) document.getElementById('counterTotalJobs').innerText = totalJobsCount;
-    if(document.getElementById('counterCustomers')) document.getElementById('counterCustomers').innerText = uniqueCustomersCount;
+    if(document.getElementById('counterCustomers')) document.getElementById('counterCustomers').innerText = activeJobsCount;
 
     // เปลี่ยนข้อความอธิบายกลุ่มสถิติให้สอดคล้องกับตัวเลข
     const labelJobs = document.getElementById('lblTotalJobsScope');
@@ -99,10 +99,10 @@ function renderTable(list, isInitialToday = false) {
     if (labelJobs && labelCust) {
         if (isInitialToday) {
             labelJobs.innerText = "จำนวนใบงานซ่อมบำรุง (เฉพาะวันนี้)";
-            labelCust.innerText = "จำนวนลูกค้าในระบบ (เฉพาะวันนี้)";
+            labelCust.innerText = "จำนวนงานที่กำลังดำเนินการ";
         } else {
             labelJobs.innerText = "จำนวนใบงานซ่อมบำรุง (ตามตัวกรอง)";
-            labelCust.innerText = "จำนวนลูกค้าในระบบ (ตามตัวกรอง)";
+            labelCust.innerText = "จำนวนงานที่กำลังดำเนินการ (ตามตัวกรอง)";
         }
     }
 
@@ -124,7 +124,9 @@ function renderTable(list, isInitialToday = false) {
             ? `onmouseenter="showJobImage(event, '${job.id}')" onmousemove="moveJobImage(event)" onmouseleave="hideJobImage()"`
             : '';
 
-        return `<tr ${hoverHandlers}>
+        const tapHandler = previewPhoto ? `onclick="handleJobRowTap(event, '${job.id}')"` : '';
+
+        return `<tr ${hoverHandlers} ${tapHandler}>
             <td><b>${d}</b></td>
             <td><span class="job-number-hover" style="color:#1e3a8a; font-weight:bold; font-family:monospace;">${job.job_number || 'No-Code'}</span></td>
             <td>${job.customer_name || 'ทั่วไป'}</td>
@@ -142,6 +144,17 @@ function renderTable(list, isInitialToday = false) {
             </td>
         </tr>`;
     }).join('');
+}
+
+function handleJobRowTap(event, jobId) {
+    if (event.target.closest('button, a, input, select, textarea')) return;
+    event.stopPropagation();
+    const popup = document.getElementById('jobImagePopup');
+    if (popup && popup.classList.contains('is-visible')) {
+        hideJobImage();
+    } else {
+        showJobImage(event, jobId);
+    }
 }
 
 function showJobImage(event, jobId) {
@@ -450,6 +463,12 @@ function setupFilterOptions() {
 
 document.addEventListener("DOMContentLoaded", () => {
     initDashboardSystem();
+
+    document.addEventListener('click', (event) => {
+        if (!event.target.closest('#historyTableBody tr') && !event.target.closest('#jobImagePopup')) {
+            hideJobImage();
+        }
+    });
     
     const btnClearSig = document.getElementById('btnClearNewCustSig');
     if (btnClearSig) {

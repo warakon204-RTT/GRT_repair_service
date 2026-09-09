@@ -11,11 +11,17 @@
 </head>
 <body>
 <div class="container">
-    <header style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; width: 100%;">
-        <div style="min-width: 280px;">
-            <h1 style="margin: 0; font-size: 24px;">📊 GRT MANAGEMENT DASHBOARD</h1>
-            <p style="margin: 5px 0 0 0; color: #64748b;">บริษัท กราฟฟิก อาร์ที ดีไซน์ จำกัด (GRAPHIC RT DESIGNS CO., LTD.)</p>
-        </div>
+<header style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:18px; width:100%; padding:4px 0 8px;">
+    <div style="width:100%; max-width:760px;">
+        <img src="LGRT11.jpg" alt="GRT Logo" style="display:block; height:72px; width:auto; max-width:180px; object-fit:contain; margin:0 auto 12px; border-radius:8px; box-shadow:0 8px 18px rgba(15,23,42,0.12);">
+        <h1 style="margin:0; color:#0f172a; font-size:clamp(24px, 3vw, 32px); line-height:1.15; letter-spacing:0.5px; font-weight:800;">GRT MANAGEMENT</h1>
+        <div style="width:56px; height:3px; background:#0284c7; border-radius:3px; margin:10px auto 9px;"></div>
+        <p style="margin:0; color:#64748b; font-size:20px; line-height:1.5; font-weight:600;">บริษัท กราฟฟิก อาร์ที ดีไซน์ จำกัด</p>
+        <p style="margin:2px 0 0; color:#94a3b8; font-size:18px; letter-spacing:0.3px;">GRAPHIC RT DESIGNS CO., LTD.</p>
+    </div>
+
+
+
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             <a href="form.html" class="btn btn-primary" style="background:#0284c7; text-decoration:none; display: inline-flex; align-items: center; gap: 6px; height: 42px; padding: 0 16px; border-radius: 6px; font-weight: 600;">
                 ➕ เปิดฟอร์มบันทึกใบงานใหม่
@@ -31,7 +37,7 @@
             <h3 id="counterTotalJobs" style="font-size:28px; margin:5px 0 0 0; font-weight: 700; color: #1e3a8a;">0</h3>
         </div>
         <div style="background:#fff; border-left:5px solid #10b981; padding:20px; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1); border:1px solid #e2e8f0;">
-            <p id="lblCustomersScope" style="margin:0; color:#64748b; font-weight: 600;">จำนวนลูกค้าในระบบ (เฉพาะวันนี้)</p>
+            <p id="lblCustomersScope" style="margin:0; color:#64748b; font-weight: 600;">จำนวนงานที่กำลังดำเนินการ</p>
             <h3 id="counterCustomers" style="font-size:28px; margin:5px 0 0 0; font-weight: 700; color: #10b981;">0</h3>
         </div>
     </section>

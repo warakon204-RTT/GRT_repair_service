@@ -10,26 +10,32 @@
     <script src="auth.js"></script>
 </head>
 <body>
+    <div id="loginSuccessSplash" aria-hidden="true" style="display:none; position:fixed; inset:0; z-index:2000; align-items:center; justify-content:center; background:rgba(15,23,42,0.94);">
+        <img src="LGRT11.jpg" alt="GRT Logo" style="width:min(260px,70vw); height:auto; border-radius:14px; box-shadow:0 0 0 8px rgba(255,255,255,0.1), 0 20px 50px rgba(0,0,0,0.4); animation:loginLogoPop 0.1s ease-out both;">
+    </div>
     <div class="container" style="max-width: 460px;">
         <div class="login-card">
             <header style="margin-bottom: 20px; text-align: center;">
-                <h1 style="font-size: 26px; margin-bottom: 8px;">🚪 เข้าสู่ระบบ GRT MANAGEMENT</h1>
-                <p>กรุณาเข้าสู่ระบบก่อนใช้งานแดชบอร์ดและฟอร์มบันทึกใบงาน</p>
+                <img src="LGRT11.jpg" alt="GRT Logo" style="display:block; width:210px; height:auto; margin:0 auto 15px; border-radius:6px;">
+                <h1 style="font-size: 26px; margin-bottom: 15px;"> เข้าสู่ระบบ</h1>
+                
             </header>
 
             <form id="loginForm" style="display: flex; flex-direction: column; gap: 18px;">
                 <div class="form-group">
-                    <label for="loginPassword">รหัสผ่าน</label>
-                    <input type="password" id="loginPassword" autocomplete="current-password" placeholder="กรอกรหัสผ่าน" required>
+                    <input type="password" id="loginPassword" autocomplete="current-password" placeholder="Password" required style="height:56px; font-size:18px; text-align:center;">
+                    <div id="capsLockWarning" role="status" style="display:none; margin-top:8px; color:#b45309; text-align:center; font-size:13px; font-weight:600;">⚠️ เปิด Caps Lock อยู่ กรุณาตรวจสอบตัวพิมพ์ใหญ่-เล็ก</div>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">🔓 เข้าสู่ระบบ</button>
             </form>
 
-            <div style="margin-top: 18px; text-align: center; color: var(--text-muted); font-size: 13px;">
-                <p>รหัสผ่านเข้าใช้งาน:</p>
-                <p><strong>g</strong></p>
-            </div>
         </div>
     </div>
+    <style>
+        @keyframes loginLogoPop {
+            from { opacity:0; transform:scale(0.82); }
+            to { opacity:1; transform:scale(1); }
+        }
+    </style>
 </body>
 </html>

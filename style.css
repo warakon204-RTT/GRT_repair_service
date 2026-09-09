@@ -298,8 +298,7 @@ button:active { transform: translateY(1px); }
 .job-image-popup {
     position: fixed;
     z-index: 1200;
-    width: min(300px, 38vw);
-    min-width: 220px;
+    width: min(300px, calc(100vw - 24px));
     padding: 8px;
     background: #ffffff;
     border: 1px solid #cbd5e1;
@@ -333,7 +332,9 @@ button:active { transform: translateY(1px); }
 }
 
 @media (hover: none) {
-    .job-image-popup { display: none; }
+    .job-image-popup {
+        pointer-events: auto;
+    }
 }
 
 /* OVERLAY POPUPS MODAL */
