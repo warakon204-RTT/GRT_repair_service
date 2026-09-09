@@ -94,18 +94,21 @@
         <h3 style="margin-top:0; color:#1e3a8a;">📝 ลงรายการดำเนินงานต่อ</h3>
         <p id="progressJobLabel" style="color:#64748b; margin:0 0 15px 0;"></p>
         <input type="hidden" id="progressJobId">
+        <input type="hidden" id="progressEditId">
         <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px;">
             <div class="form-group" style="margin-bottom:12px;"><label>เลข JOB</label><input type="text" id="progressJobNumber" placeholder="เลข JOB"></div>
             <div class="form-group" style="margin-bottom:12px;"><label>วันที่ดำเนินงาน</label><input type="date" id="progressDate"></div>
             <div class="form-group" style="margin-bottom:12px;"><label>เลขที่ใบเสนอราคา</label><input type="text" id="progressQuotationNumber" placeholder="เลขที่ใบเสนอราคา"></div>
             <div class="form-group" style="margin-bottom:12px;"><label>เลขที่ PO</label><input type="text" id="progressPoNumber" placeholder="เลขที่ PO"></div>
             <div class="form-group" style="margin-bottom:12px;"><label>เลขที่ใบส่งของ</label><input type="text" id="progressDeliveryNoteNumber" placeholder="เลขที่ใบส่งของ"></div>
-            <div class="form-group" style="margin-bottom:12px;"><label>ผู้ดำเนินงาน</label><input type="text" id="progressTechnician" placeholder="ชื่อช่างหรือผู้บันทึก"></div>
+            <div class="form-group" style="margin-bottom:12px;"><label>ผู้ตรวจสอบ - สโตร์</label><input class="inspector-input-store" type="text" id="progressStoreInspector" placeholder="ชื่อผู้ตรวจสอบสโตร์"></div>
+            <div class="form-group" style="margin-bottom:12px;"><label>ผู้ตรวจสอบ - QC</label><input class="inspector-input-qc" type="text" id="progressQcInspector" placeholder="ชื่อผู้ตรวจสอบ QC"></div>
+            <div class="form-group" style="margin-bottom:12px;"><label>ผู้ตรวจสอบ - วางแผน</label><input class="inspector-input-planning" type="text" id="progressPlanningInspector" placeholder="ชื่อผู้ตรวจสอบฝ่ายวางแผน"></div>
         </div>
         <div class="form-group" style="margin-bottom:15px;"><label>รายละเอียดการดำเนินงาน</label><textarea id="progressDetail" rows="4" placeholder="ระบุสิ่งที่ดำเนินการ ผลการทำงาน หรือสิ่งที่ต้องทำต่อ"></textarea></div>
         <div style="display:flex; gap:10px; justify-content:flex-end;">
             <button type="button" onclick="closeProgressModal()" style="background:#64748b; color:#fff;">ยกเลิก</button>
-            <button type="button" onclick="saveProgressEntry()" style="background:#10b981; color:#fff;">💾 บันทึกรายการ</button>
+            <button type="button" id="progressSaveButton" onclick="saveProgressEntry()" style="background:#10b981; color:#fff;">💾 บันทึกรายการ</button>
         </div>
         <div id="progressHistory" style="margin-top:20px; border-top:1px solid #e2e8f0; padding-top:15px;"></div>
     </div>

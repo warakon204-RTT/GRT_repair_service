@@ -331,6 +331,84 @@ button:active { transform: translateY(1px); }
     line-height: 1.35;
 }
 
+.progress-entry {
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.progress-documents {
+    margin-top: 5px;
+    color: #475569;
+    font-size: 12px;
+    line-height: 1.7;
+    word-break: break-word;
+}
+
+.inspector-strips {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.inspector-strips:empty {
+    display: none;
+}
+
+.inspector-strip {
+    min-width: 0;
+    padding: 7px 9px;
+    border-left: 4px solid;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.inspector-strip strong,
+.inspector-strip span {
+    display: block;
+}
+
+.inspector-strip strong {
+    margin-bottom: 2px;
+    font-size: 11px;
+}
+
+.inspector-store {
+    color: #075985;
+    background: #e0f2fe;
+    border-color: #0284c7;
+}
+
+.inspector-qc {
+    color: #166534;
+    background: #dcfce7;
+    border-color: #16a34a;
+}
+
+.inspector-planning {
+    color: #9a3412;
+    background: #ffedd5;
+    border-color: #f97316;
+}
+
+.progress-detail {
+    margin-top: 8px;
+    color: #334155;
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+.inspector-input-store { border-left: 4px solid #0284c7 !important; }
+.inspector-input-qc { border-left: 4px solid #16a34a !important; }
+.inspector-input-planning { border-left: 4px solid #f97316 !important; }
+
+@media (max-width: 520px) {
+    .inspector-strips {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (hover: none) {
     .job-image-popup {
         pointer-events: auto;

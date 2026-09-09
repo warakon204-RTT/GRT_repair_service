@@ -1,6 +1,7 @@
 let supabaseClient = null; 
 let localCachedJobs = [];
 let jobPreviewPhotos = {};
+let progressEntriesById = {};
 let isCanvasDrawn = false; // ตรวจสอบว่าลูกค้ามีการวาดลายเซ็นใหม่ใน Modal หรือไม่
 
 // ==========================================
@@ -410,41 +411,109 @@ async function openProgressModal(id) {
     const job = localCachedJobs.find(item => item.id == id);
     if (!job) return;
     document.getElementById('progressJobId').value = id;
+    document.getElementById('progressEditId').value = '';
     document.getElementById('progressJobLabel').innerText = `JOB ${job.job_number || '-'} | ${job.customer_name || '-'}`;
     document.getElementById('progressJobNumber').value = job.job_number || '';
     document.getElementById('progressDate').value = todayInputValue();
     document.getElementById('progressQuotationNumber').value = '';
     document.getElementById('progressPoNumber').value = '';
     document.getElementById('progressDeliveryNoteNumber').value = '';
-    document.getElementById('progressTechnician').value = job.printed_technician_name || job.technician_name || '';
+    document.getElementById('progressStoreInspector').value = '';
+    document.getElementById('progressQcInspector').value = '';
+    document.getElementById('progressPlanningInspector').value = '';
     document.getElementById('progressDetail').value = '';
+    document.getElementById('progressSaveButton').innerText = '💾 บันทึกรายการ';
     document.getElementById('progressModal').style.display = 'flex';
-    await loadProgressEntries(id);
+    const progressEntries = await loadProgressEntries(id);
+    const latestEntry = progressEntries && progressEntries[0];
+    if (latestEntry) {
+        document.getElementById('progressQuotationNumber').value = latestEntry.quotation_number || '';
+        document.getElementById('progressPoNumber').value = latestEntry.po_number || '';
+        document.getElementById('progressDeliveryNoteNumber').value = latestEntry.delivery_note_number || '';
+    }
 }
 
 function closeProgressModal() { document.getElementById('progressModal').style.display = 'none'; }
+
+function renderInspectorStrips(item) {
+    const inspectors = [
+        ['store_inspector', 'สโตร์', 'inspector-store'],
+        ['qc_inspector', 'QC', 'inspector-qc'],
+        ['planning_inspector', 'วางแผน', 'inspector-planning']
+    ];
+    return inspectors
+        .filter(([field]) => item[field] && String(item[field]).trim())
+        .map(([field, label, className]) => `<div class="inspector-strip ${className}"><strong>${label}</strong><span>${escapeHtml(item[field])}</span></div>`)
+        .join('');
+}
 
 async function loadProgressEntries(id) {
     const history = document.getElementById('progressHistory');
     history.innerHTML = 'กำลังโหลดรายการดำเนินงาน...';
     const { data, error } = await supabaseClient.from('job_progress').select('*').eq('job_id', id).order('operation_date', { ascending: false }).order('created_at', { ascending: false });
-    if (error) { history.innerHTML = `<span style="color:#ef4444">โหลดรายการไม่สำเร็จ: ${error.message}</span>`; return; }
-    history.innerHTML = data && data.length ? data.map(item => `<div style="border-bottom:1px solid #e2e8f0;padding:9px 0"><b>${new Date(`${item.operation_date}T00:00:00`).toLocaleDateString('th-TH')}</b> ${item.technician_name ? `| ${escapeHtml(item.technician_name)}` : ''}<br><small style="color:#475569;line-height:1.8;">JOB: ${escapeHtml(item.job_number) || '-'} | ใบเสนอราคา: ${escapeHtml(item.quotation_number) || '-'} | PO: ${escapeHtml(item.po_number) || '-'} | ใบส่งของ: ${escapeHtml(item.delivery_note_number) || '-'}</small><br>${escapeHtml(item.operation_detail)}</div>`).join('') : '<span style="color:#94a3b8">ยังไม่มีรายการดำเนินงานต่อ</span>';
+    if (error) { history.innerHTML = `<span style="color:#ef4444">โหลดรายการไม่สำเร็จ: ${error.message}</span>`; return []; }
+    progressEntriesById = {};
+    (data || []).forEach(item => { progressEntriesById[item.id] = item; });
+    history.innerHTML = data && data.length ? data.map(item => `<div class="progress-entry"><b>${new Date(`${item.operation_date}T00:00:00`).toLocaleDateString('th-TH')}</b><div class="progress-documents">JOB: ${escapeHtml(item.job_number) || '-'} | ใบเสนอราคา: ${escapeHtml(item.quotation_number) || '-'} | PO: ${escapeHtml(item.po_number) || '-'} | ใบส่งของ: ${escapeHtml(item.delivery_note_number) || '-'}</div><div class="inspector-strips">${renderInspectorStrips(item)}</div><div class="progress-detail">${escapeHtml(item.operation_detail)}</div><div style="display:flex;gap:6px;margin-top:8px;"><button type="button" onclick="editProgressEntry('${item.id}')" style="height:30px;padding:0 10px;background:#0284c7;color:#fff;">✏️ แก้ไข</button><button type="button" onclick="deleteProgressEntry('${item.id}')" style="height:30px;padding:0 10px;background:#ef4444;color:#fff;">🗑️ ลบ</button></div></div>`).join('') : '<span style="color:#94a3b8">ยังไม่มีรายการดำเนินงานต่อ</span>';
+    return data || [];
+}
+
+function editProgressEntry(id) {
+    const item = progressEntriesById[id];
+    if (!item) return;
+    document.getElementById('progressEditId').value = item.id;
+    document.getElementById('progressJobNumber').value = item.job_number || '';
+    document.getElementById('progressDate').value = item.operation_date || todayInputValue();
+    document.getElementById('progressQuotationNumber').value = item.quotation_number || '';
+    document.getElementById('progressPoNumber').value = item.po_number || '';
+    document.getElementById('progressDeliveryNoteNumber').value = item.delivery_note_number || '';
+    document.getElementById('progressStoreInspector').value = item.store_inspector || '';
+    document.getElementById('progressQcInspector').value = item.qc_inspector || '';
+    document.getElementById('progressPlanningInspector').value = item.planning_inspector || '';
+    document.getElementById('progressDetail').value = item.operation_detail || '';
+    document.getElementById('progressSaveButton').innerText = '💾 บันทึกการแก้ไข';
+    document.getElementById('progressDetail').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function deleteProgressEntry(id) {
+    const result = await Swal.fire({ title: 'ลบรายการนี้หรือไม่?', text: 'ข้อมูลรายการดำเนินงานจะถูกลบถาวร', icon: 'warning', showCancelButton: true, confirmButtonText: 'ลบรายการ', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#ef4444' });
+    if (!result.isConfirmed) return;
+    const { error } = await supabaseClient.from('job_progress').delete().eq('id', id);
+    if (error) return Swal.fire('ลบไม่สำเร็จ', error.message, 'error');
+    await loadProgressEntries(document.getElementById('progressJobId').value);
 }
 
 async function saveProgressEntry() {
     const jobId = document.getElementById('progressJobId').value;
-    const operationDate = document.getElementById('progressDate').value;
+    const operationDate = document.getElementById('progressDate').value || todayInputValue();
     const jobNumber = document.getElementById('progressJobNumber').value.trim();
     const quotationNumber = document.getElementById('progressQuotationNumber').value.trim();
     const poNumber = document.getElementById('progressPoNumber').value.trim();
     const deliveryNoteNumber = document.getElementById('progressDeliveryNoteNumber').value.trim();
-    const detail = document.getElementById('progressDetail').value.trim();
-    const technician = document.getElementById('progressTechnician').value.trim();
-    if (!operationDate || !detail) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุวันที่และรายละเอียดการดำเนินงาน', 'warning');
-    const { error } = await supabaseClient.from('job_progress').insert([{ job_id: jobId, job_number: jobNumber, quotation_number: quotationNumber, po_number: poNumber, delivery_note_number: deliveryNoteNumber, operation_date: operationDate, operation_detail: detail, technician_name: technician }]);
+    const detail = document.getElementById('progressDetail').value.trim() || 'บันทึกรายการดำเนินงาน';
+    const storeInspector = document.getElementById('progressStoreInspector').value.trim();
+    const qcInspector = document.getElementById('progressQcInspector').value.trim();
+    const planningInspector = document.getElementById('progressPlanningInspector').value.trim();
+    const inspectorCount = [storeInspector, qcInspector, planningInspector].filter(Boolean).length;
+    if (inspectorCount === 0) {
+        return Swal.fire('ยังไม่ได้ลงชื่อผู้ตรวจสอบ', 'กรุณากรอกชื่อผู้ตรวจสอบ 1 ช่องก่อนบันทึก', 'warning');
+    }
+    if (inspectorCount > 1) {
+        return Swal.fire('บันทึกได้ครั้งละ 1 ผู้ตรวจสอบ', 'กรุณากรอกผู้ตรวจสอบเพียง 1 ช่องต่อการบันทึก 1 ครั้ง', 'warning');
+    }
+    const payload = { job_id: jobId, job_number: jobNumber, quotation_number: quotationNumber, po_number: poNumber, delivery_note_number: deliveryNoteNumber, operation_date: operationDate, operation_detail: detail, store_inspector: storeInspector, qc_inspector: qcInspector, planning_inspector: planningInspector };
+    const editId = document.getElementById('progressEditId').value;
+    const query = editId
+        ? supabaseClient.from('job_progress').update(payload).eq('id', editId)
+        : supabaseClient.from('job_progress').insert([payload]);
+    const { error } = await query;
     if (error) return Swal.fire('บันทึกไม่สำเร็จ', error.message, 'error');
     document.getElementById('progressDetail').value = '';
+    document.getElementById('progressStoreInspector').value = '';
+    document.getElementById('progressQcInspector').value = '';
+    document.getElementById('progressPlanningInspector').value = '';
+    document.getElementById('progressEditId').value = '';
+    document.getElementById('progressSaveButton').innerText = '💾 บันทึกรายการ';
     await loadProgressEntries(jobId);
 }
 
