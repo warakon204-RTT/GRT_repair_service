@@ -411,7 +411,42 @@ button:active { transform: translateY(1px); }
 
 @media (hover: none) {
     .job-image-popup {
-        pointer-events: auto;
+        pointer-events: none;
+    }
+}
+
+.progress-modal-actions {
+    flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+    .modal-overlay {
+        align-items: flex-start;
+        padding: 12px;
+        overflow-y: auto;
+    }
+
+    .progress-modal-content {
+        width: 100% !important;
+        max-height: calc(100vh - 24px) !important;
+        margin: 0;
+        padding: 18px !important;
+    }
+
+    .progress-modal-actions {
+        position: sticky;
+        bottom: -18px;
+        margin: 0 -18px -18px;
+        padding: 12px 18px;
+        background: #fff;
+        border-top: 1px solid #e2e8f0;
+        z-index: 2;
+    }
+
+    .progress-modal-actions .btn,
+    .progress-modal-actions button {
+        flex: 1 1 100%;
+        min-height: 44px;
     }
 }
 
