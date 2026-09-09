@@ -7,8 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="auth.js"></script>
 </head>
 <body>
 <div class="app-container"> 
@@ -18,13 +18,14 @@
             <p style="font-weight: 600; color: var(--accent-color); margin-top: 5px;">บริษัท กราฟฟิค อาร์ที ดีไซน์ จำกัด (GRAPHIC RT DESIGNS CO., LTD.)</p>
         </div>
         
-        <div style="display: flex; gap: 10px;" class="no-print">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;" class="no-print">
             <button type="button" onclick="refreshForm()" class="btn" style="background: #64748b; color: white; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(100, 116, 139, 0.15); cursor: pointer;">
                 🔄 รีเฟรชฟอร์ม
             </button>
             <a href="index.html" class="btn btn-primary" style="background: var(--accent-color); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);">
                 📊 กลับหน้าแดชบอร์ด
             </a>
+            <button type="button" id="btnLogout" onclick="logoutUser()" class="btn btn-danger-sm" style="background:#ef4444; color:#fff;">🔓 ออกจากระบบ</button>
         </div>
     </header>
 

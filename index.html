@@ -16,10 +16,11 @@
             <h1 style="margin: 0; font-size: 24px;">📊 GRT MANAGEMENT DASHBOARD</h1>
             <p style="margin: 5px 0 0 0; color: #64748b;">บริษัท กราฟฟิก อาร์ที ดีไซน์ จำกัด (GRAPHIC RT DESIGNS CO., LTD.)</p>
         </div>
-        <div style="display: flex; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             <a href="form.html" class="btn btn-primary" style="background:#0284c7; text-decoration:none; display: inline-flex; align-items: center; gap: 6px; height: 42px; padding: 0 16px; border-radius: 6px; font-weight: 600;">
                 ➕ เปิดฟอร์มบันทึกใบงานใหม่
             </a>
+            <button type="button" id="btnLogout" onclick="logoutUser()" class="btn btn-danger-sm" style="height: 42px; padding: 0 16px;">🔓 ออกจากระบบ</button>
         </div>
     </header>
     <hr style="border: 1px dashed #e2e8f0; margin: 25px 0;">
@@ -49,6 +50,14 @@
                 <label style="display:block; margin-bottom:6px; font-size:14px; font-weight:600; color:#475569;">ถึงวันที่</label>
                 <input type="date" id="filterDateEnd" onchange="filterData()" style="width:100%; height:38px; border-radius:6px; border:1px solid #cbd5e1; padding:0 10px;">
             </div>
+            <div style="flex:1; min-width:190px;">
+                <label style="display:block; margin-bottom:6px; font-size:14px; font-weight:600; color:#475569;">สถานะใบงาน</label>
+                <select id="filterStatus" onchange="filterData()" style="width:100%; height:40px; border-radius:6px; border:1px solid #cbd5e1; padding:0 10px; background:#fff;">
+                    <option value="OPEN">งานที่ยังดำเนินการ</option>
+                    <option value="SENT">ส่งกลับลูกค้าแล้ว</option>
+                    <option value="ALL">แสดงทุกสถานะ</option>
+                </select>
+            </div>
             <button type="button" class="btn btn-primary" onclick="resetFilters()" style="background:#475569; color:#fff; border:none; border-radius:6px; height:40px; padding:0 20px; cursor: pointer; font-weight:600; display:inline-flex; align-items:center; gap:6px;">🔄 รีเซ็ต</button>
         </div>
     </section>
@@ -62,15 +71,43 @@
                     <th>ชื่อบริษัทลูกค้า</th>
                     <th>อุปกรณ์</th>
                     <th>ประเภทงาน</th>
+                    <th>สถานะ / วันที่ส่ง</th>
                     <th>ผู้บันทึก</th>
                     <th>จัดการ</th>
                 </tr>
             </thead>
             <tbody id="historyTableBody">
-                <tr><td colspan="7" style="text-align:center; color:#94a3b8;">⏳ กำลังเชื่อมต่อระบบเพื่อตรวจสอบใบงาน...</td></tr>
+                <tr><td colspan="8" style="text-align:center; color:#94a3b8;">⏳ กำลังเชื่อมต่อระบบเพื่อตรวจสอบใบงาน...</td></tr>
             </tbody>
         </table>
     </div>
+</div>
+
+<div id="progressModal" class="modal-overlay">
+    <div class="modal-content" style="max-width:620px; width:90%; max-height:90vh; overflow-y:auto; padding:25px;">
+        <h3 style="margin-top:0; color:#1e3a8a;">📝 ลงรายการดำเนินงานต่อ</h3>
+        <p id="progressJobLabel" style="color:#64748b; margin:0 0 15px 0;"></p>
+        <input type="hidden" id="progressJobId">
+        <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px;">
+            <div class="form-group" style="margin-bottom:12px;"><label>เลข JOB</label><input type="text" id="progressJobNumber" placeholder="เลข JOB"></div>
+            <div class="form-group" style="margin-bottom:12px;"><label>วันที่ดำเนินงาน</label><input type="date" id="progressDate"></div>
+            <div class="form-group" style="margin-bottom:12px;"><label>เลขที่ใบเสนอราคา</label><input type="text" id="progressQuotationNumber" placeholder="เลขที่ใบเสนอราคา"></div>
+            <div class="form-group" style="margin-bottom:12px;"><label>เลขที่ PO</label><input type="text" id="progressPoNumber" placeholder="เลขที่ PO"></div>
+            <div class="form-group" style="margin-bottom:12px;"><label>เลขที่ใบส่งของ</label><input type="text" id="progressDeliveryNoteNumber" placeholder="เลขที่ใบส่งของ"></div>
+            <div class="form-group" style="margin-bottom:12px;"><label>ผู้ดำเนินงาน</label><input type="text" id="progressTechnician" placeholder="ชื่อช่างหรือผู้บันทึก"></div>
+        </div>
+        <div class="form-group" style="margin-bottom:15px;"><label>รายละเอียดการดำเนินงาน</label><textarea id="progressDetail" rows="4" placeholder="ระบุสิ่งที่ดำเนินการ ผลการทำงาน หรือสิ่งที่ต้องทำต่อ"></textarea></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button type="button" onclick="closeProgressModal()" style="background:#64748b; color:#fff;">ยกเลิก</button>
+            <button type="button" onclick="saveProgressEntry()" style="background:#10b981; color:#fff;">💾 บันทึกรายการ</button>
+        </div>
+        <div id="progressHistory" style="margin-top:20px; border-top:1px solid #e2e8f0; padding-top:15px;"></div>
+    </div>
+</div>
+
+<div id="jobImagePopup" class="job-image-popup" aria-hidden="true">
+    <img id="jobImagePopupImg" src="" alt="รูปภาพประกอบใบงาน">
+    <div id="jobImagePopupCaption"></div>
 </div>
 
 <div id="viewDocModal" class="modal-overlay">
@@ -125,6 +162,7 @@
     </div>
 </div>
 
+<script src="auth.js"></script>
 <script src="dashboard.js"></script>
 </body>
 </html>

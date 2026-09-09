@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ GRT MANAGEMENT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="auth.js"></script>
+</head>
+<body>
+    <div class="container" style="max-width: 460px;">
+        <div class="login-card">
+            <header style="margin-bottom: 20px; text-align: center;">
+                <h1 style="font-size: 26px; margin-bottom: 8px;">🚪 เข้าสู่ระบบ GRT MANAGEMENT</h1>
+                <p>กรุณาเข้าสู่ระบบก่อนใช้งานแดชบอร์ดและฟอร์มบันทึกใบงาน</p>
+            </header>
+
+            <form id="loginForm" style="display: flex; flex-direction: column; gap: 18px;">
+                <div class="form-group">
+                    <label for="loginPassword">รหัสผ่าน</label>
+                    <input type="password" id="loginPassword" autocomplete="current-password" placeholder="กรอกรหัสผ่าน" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">🔓 เข้าสู่ระบบ</button>
+            </form>
+
+            <div style="margin-top: 18px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                <p>รหัสผ่านเข้าใช้งาน:</p>
+                <p><strong>g</strong></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
