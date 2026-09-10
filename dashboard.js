@@ -1,6 +1,7 @@
 let supabaseClient = null; 
 let localCachedJobs = [];
 let jobPreviewPhotos = {};
+let jobsWithProgress = new Set();
 let progressEntriesById = {};
 let isCanvasDrawn = false; // ตรวจสอบว่าลูกค้ามีการวาดลายเซ็นใหม่ใน Modal หรือไม่
 
@@ -52,6 +53,16 @@ async function loadHistoryData() {
         (photoData || []).forEach(photo => {
             if (!jobPreviewPhotos[photo.job_id]) jobPreviewPhotos[photo.job_id] = photo;
         });
+
+        const { data: progressData, error: progressError } = await supabaseClient
+            .from('job_progress')
+            .select('job_id');
+        if (progressError) {
+            console.warn('ไม่สามารถโหลดสถานะการดำเนินงานต่อได้: ', progressError.message);
+            jobsWithProgress = new Set();
+        } else {
+            jobsWithProgress = new Set((progressData || []).map(item => String(item.job_id)));
+        }
         
         setupFilterOptions();
         
@@ -99,7 +110,7 @@ function renderTable(list, isInitialToday = false) {
     const labelCust = document.getElementById('lblCustomersScope');
     if (labelJobs && labelCust) {
         if (isInitialToday) {
-            labelJobs.innerText = "จำนวนใบงานซ่อมบำรุง (เฉพาะวันนี้)";
+            labelJobs.innerText = "จำนวนใบงานวันนี้";
             labelCust.innerText = "จำนวนงานที่กำลังดำเนินการ";
         } else {
             labelJobs.innerText = "จำนวนใบงานซ่อมบำรุง (ตามตัวกรอง)";
@@ -118,6 +129,8 @@ function renderTable(list, isInitialToday = false) {
         const d = rawDate ? new Date(rawDate).toLocaleDateString('th-TH', {year:'numeric', month:'short', day:'numeric'}) : 'ไม่ระบุวันที่';
         const displayTechName = job.printed_technician_name || job.technician_name || '-';
         const isSent = job.job_status === 'ส่งกลับลูกค้าแล้ว';
+        const hasProgress = jobsWithProgress.has(String(job.id));
+        const displayStatus = isSent ? 'ส่งกลับลูกค้าแล้ว' : (hasProgress ? 'กำลังดำเนินการ' : 'รอดำเนินการ');
         const sentDate = job.sent_date ? new Date(`${job.sent_date}T00:00:00`).toLocaleDateString('th-TH', {year:'numeric', month:'short', day:'numeric'}) : '-';
         
         const previewPhoto = jobPreviewPhotos[job.id];
@@ -133,7 +146,7 @@ function renderTable(list, isInitialToday = false) {
             <td>${job.customer_name || 'ทั่วไป'}</td>
             <td>${job.item_name || '-'}</td>
             <td><mark style="background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:4px; font-weight:600; font-size:12px;">${job.job_type}</mark></td>
-            <td><span style="color:${isSent ? '#15803d' : '#d97706'}; font-weight:600;">${isSent ? 'ส่งกลับลูกค้าแล้ว' : 'กำลังดำเนินการ'}</span>${isSent ? `<br><small>วันที่ส่ง: ${sentDate}</small>` : ''}</td>
+            <td><span style="color:${isSent ? '#15803d' : (hasProgress ? '#d97706' : '#64748b')}; font-weight:600;">${displayStatus}</span>${isSent ? `<br><small>วันที่ส่ง: ${sentDate}</small>` : ''}</td>
             <td>👤 ${displayTechName}</td>
             <td>
                 <div style="display:flex; gap:6px;">
@@ -463,7 +476,7 @@ async function loadProgressEntries(id) {
     if (error) { history.innerHTML = `<span style="color:#ef4444">โหลดรายการไม่สำเร็จ: ${error.message}</span>`; return []; }
     progressEntriesById = {};
     (data || []).forEach(item => { progressEntriesById[item.id] = item; });
-    history.innerHTML = data && data.length ? data.map(item => `<div class="progress-entry"><b>${new Date(`${item.operation_date}T00:00:00`).toLocaleDateString('th-TH')}</b><div class="progress-documents">JOB: ${escapeHtml(item.job_number) || '-'} | ใบเสนอราคา: ${escapeHtml(item.quotation_number) || '-'} | PO: ${escapeHtml(item.po_number) || '-'} | ใบส่งของ: ${escapeHtml(item.delivery_note_number) || '-'}</div><div class="inspector-strips">${renderInspectorStrips(item)}</div><div class="progress-detail">${escapeHtml(item.operation_detail)}</div><div style="display:flex;gap:6px;margin-top:8px;"><button type="button" onclick="editProgressEntry('${item.id}')" style="height:30px;padding:0 10px;background:#0284c7;color:#fff;">✏️ แก้ไข</button><button type="button" onclick="deleteProgressEntry('${item.id}')" style="height:30px;padding:0 10px;background:#ef4444;color:#fff;">🗑️ ลบ</button></div></div>`).join('') : '<span style="color:#94a3b8">ยังไม่มีรายการดำเนินงานต่อ</span>';
+    history.innerHTML = data && data.length ? data.map(item => `<div class="progress-entry"><b>${new Date(`${item.operation_date}T00:00:00`).toLocaleDateString('th-TH')}</b><div class="progress-documents">JOB: ${escapeHtml(item.job_number) || '-'} | ใบเสนอราคา: ${escapeHtml(item.quotation_number) || '-'} | PO: ${escapeHtml(item.po_number) || '-'} | ใบส่งของ: ${escapeHtml(item.delivery_note_number) || '-'}</div><div class="inspector-strips">${renderInspectorStrips(item)}</div><div class="progress-detail">${escapeHtml(item.operation_detail)}</div><div style="display:flex;gap:6px;margin-top:8px;"><button type="button" onclick="editProgressEntry('${item.id}')" style="height:30px;padding:0 10px;background:#0284c7;color:#fff;">✏️ แก้ไข</button><button type="button" onclick="deleteProgressEntry('${item.id}')" style="height:30px;padding:0 10px;background:#ef4444;color:#fff;">🗑️ ลบ</button></div></div>`).join('') : '<span style="color:#d97706;font-weight:600">รอดำเนินการ</span>';
     return data || [];
 }
 
