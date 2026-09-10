@@ -159,6 +159,7 @@ function handleJobRowTap(event, jobId) {
 }
 
 function showJobImage(event, jobId) {
+    if (event.target.closest('button, a, input, select, textarea')) return;
     const photo = jobPreviewPhotos[jobId];
     const popup = document.getElementById('jobImagePopup');
     const image = document.getElementById('jobImagePopupImg');
@@ -173,6 +174,10 @@ function showJobImage(event, jobId) {
 }
 
 function moveJobImage(event) {
+    if (event.target.closest('button, a, input, select, textarea')) {
+        hideJobImage();
+        return;
+    }
     const popup = document.getElementById('jobImagePopup');
     if (!popup || !popup.classList.contains('is-visible')) return;
     const offset = 18;
@@ -385,6 +390,7 @@ function resetFilters() {
 function todayInputValue() { return new Date().toISOString().split('T')[0]; }
 
 async function markJobSent(id) {
+    const savedScrollY = window.scrollY;
     const result = await Swal.fire({
         title: 'บันทึกการส่งงานกลับลูกค้า',
         html: '<label style="display:block;text-align:left;margin-bottom:6px">วันที่ส่งงาน</label><input id="sentDateInput" type="date" class="swal2-input" style="width:90%;margin:0">',
@@ -397,14 +403,17 @@ async function markJobSent(id) {
     const { error } = await supabaseClient.from('repair_jobs').update({ job_status: 'ส่งกลับลูกค้าแล้ว', sent_date: sentDate }).eq('id', id);
     if (error) return Swal.fire('บันทึกไม่สำเร็จ', error.message, 'error');
     await loadHistoryData();
+    requestAnimationFrame(() => window.scrollTo({ top: savedScrollY, behavior: 'instant' }));
 }
 
 async function restoreJob(id) {
+    const savedScrollY = window.scrollY;
     const result = await Swal.fire({ title: 'เรียกใบงานกลับมาแสดง?', icon: 'question', showCancelButton: true, confirmButtonText: 'เรียกกลับ', cancelButtonText: 'ยกเลิก' });
     if (!result.isConfirmed) return;
     const { error } = await supabaseClient.from('repair_jobs').update({ job_status: 'กำลังดำเนินการ', sent_date: null }).eq('id', id);
     if (error) return Swal.fire('บันทึกไม่สำเร็จ', error.message, 'error');
     await loadHistoryData();
+    requestAnimationFrame(() => window.scrollTo({ top: savedScrollY, behavior: 'instant' }));
 }
 
 async function openProgressModal(id) {
