@@ -49,12 +49,15 @@ async function refreshActiveDeviceCount() {
     const countElement = document.getElementById('activeDevicesCount');
     if (!countElement) return;
     const client = getSupabaseClient();
-    if (!client) return;
+    if (!client) {
+        countElement.textContent = '0';
+        return;
+    }
     const activeSince = new Date(Date.now() - (DEVICE_HEARTBEAT_MS * 2)).toISOString();
     const { count, error } = await client.from('active_devices')
         .select('id', { count: 'exact', head: true })
         .gte('last_seen', activeSince);
-    if (!error) countElement.textContent = count || 0;
+    countElement.textContent = error ? '0' : (count || 0);
 }
 
 function isUserAuthenticated() {
@@ -157,9 +160,11 @@ function setupAuthPage() {
             redirectToLogin();
         } else {
             const session = getStoredSession();
-            updateDeviceHeartbeat();
-            setInterval(updateDeviceHeartbeat, DEVICE_HEARTBEAT_MS);
-            refreshActiveDeviceCount();
+            updateDeviceHeartbeat().then(refreshActiveDeviceCount);
+            setInterval(async () => {
+                await updateDeviceHeartbeat();
+                refreshActiveDeviceCount();
+            }, DEVICE_HEARTBEAT_MS);
             setTimeout(() => {
                 if (!isUserAuthenticated()) {
                     removeDeviceSession();
