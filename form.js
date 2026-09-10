@@ -304,6 +304,12 @@ async function submitRepairJob() {
                     });
                 }
             });
+        } else {
+            batch.push({
+                job_id: jobId,
+                checklist_item: "ตรวจสอบชิ้นส่วนอะไหล่และอุปกรณ์",
+                status: "ครบถ้วน"
+            });
         }
 
         if(batch.length > 0) {
